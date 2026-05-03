@@ -1,0 +1,39 @@
+---
+description: Draft or finalize the analysis report. /report draft creates a draft from current experiments; /report finalize promotes selected artifacts to results/ and updates root README.
+---
+
+Produce the analysis report.
+
+Argument parsing: `$ARGUMENTS` is `draft` (default) or `finalize`.
+
+For `draft`:
+
+1. Verify the current phase is `Analysis Report`. If not, ask the user to `/phase advance` first (or confirm they want to draft early).
+
+2. Spawn the `analyst` subagent with:
+   - Inputs: research/research_goal.md, research/progress.md, experiments/ledger.tsv, all `experiments/EXPxxx_*/metrics.json`
+   - Template: respec/05_analysis_report.md
+   - Output: research/analysis_report.md
+   - Required sections: Data summary, Goal achievement, Model comparison, Statistical tests, Limits, Conclusion
+   - Reporting language discipline: per `prompts/ml_researcher.md`
+
+3. After the analyst returns, automatically spawn `critic` with `scope=report` for an audit. Surface findings.
+
+4. If critic is PASS or WARN, the draft stands; if BLOCK, the analyst should iterate.
+
+For `finalize`:
+
+1. Verify research/analysis_report.md exists and was last critic'd as PASS.
+
+2. Promote selected artifacts:
+   - Copy figures from the cited experiments into `results/figures/`.
+   - Copy tables into `results/tables/`.
+   - Write `results/reports/final.md` (a short reader-facing version of analysis_report).
+
+3. Update root README.md's "Current state" / "Best result" sections.
+
+4. Spawn `critic` with `scope=current-best` for a final consistency check.
+
+5. If PASS, mark the project's `progress.md` with status `Finalized` and note the final analysis_report path.
+
+$ARGUMENTS
