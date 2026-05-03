@@ -95,6 +95,20 @@ Tasks:
 
 Exit criteria: `/lit search "small-sample radiomics"` produces a populated `papers/shortlist.md` with at least 5 entries each annotated with relevance.
 
+## M-K — Knowledge integration
+
+**Goal**: ml-researcher acts with senior-engineer depth, not generic-LLM guessing. See [`12_knowledge_integration.md`](12_knowledge_integration.md) for the full design.
+
+Tasks:
+- [ ] `internal/prompts/ml_researcher_v1.yaml` — system prompt structured after ml-intern v3 (persona, three-phase workflow, anti-patterns, hardware sizing, OOM ladder, dataset format rules, pre-flight checklist)
+- [ ] `internal/data/model_registry.yaml` — initial 60-100 entries spanning the 6 domains in `12_knowledge_integration.md` §2; each entry has `last_verified` date
+- [ ] `model_recommend` tool wired to read the registry
+- [ ] `skills/ml/` initial set — at least `medical-small-sample-transfer.md`, `tabular-tabpfn-vs-xgboost.md`, `vision-classification-fine-tune.md`, `oom-recovery-checklist.md`
+- [ ] HF MCP server pre-configured in default `.mlr/mcp.json` template
+- [ ] arxiv-mcp-server documented as opt-in for `paper_search`
+
+Exit criteria: a fresh project asks `mlr` "what model for tumor purity prediction with 270 cases of MRI + clinical?" and the response cites specific candidates from the registry (e.g. RadDINO, BiomedCLIP, MedGemma, or a tabular fusion route via TabPFNv2), with `last_verified` dates and pros/cons — not a generic "you could try a CNN" answer.
+
 ## M6 — L3 methodology enforcement
 
 **Goal**: the lifecycle gates and `critic` actually block bad behavior.
@@ -150,8 +164,33 @@ Exit criteria: `brew install genai-io/tap/mlr` (or equivalent) installs a workin
 
 ## Risk & sequencing notes
 
-- **M1 is the only milestone that touches gen-code.** All others are additive in ml-researcher. Schedule M1 early so M2 onwards can proceed independently of upstream review.
+- **M1 is the only milestone that touches gen-code.** Per the v0.1 decision, M1 starts as a **fork** of gen-code (validate the build-tag approach), then upstreams the tag once proven. All other milestones are additive in ml-researcher.
 - **M2 unblocks the rest.** Until the binary builds, nothing else can be tested integrated.
+- **M-K is the highest-leverage differentiator.** The model registry + skills + ml playbook prompt is what separates ml-researcher from "yet another agent over gen-code." Run M-K in parallel with M5 once M2 is done.
 - **M4 is the highest-value demo.** A working L1 loop is the most surprising outcome a reviewer will see; prioritize over M5.
 - **M6 is the highest-risk milestone.** Phase gates and critic agent involve subtle prompt engineering and may need iteration.
 - **M7 doubles as documentation.** It produces the canonical "show me how it works" demo.
+
+## v0.1 sequencing
+
+```
+M0 (spec freeze)
+   │
+   ▼
+M1 (fork gen-code, add nouserconfig tag) ── M2 (skeleton binary)
+                                              │
+                                              ├── M3 (init + templates)
+                                              │
+                                              ├── M4 (L1 loop) ─────────────┐
+                                              │                             │
+                                              ├── M5 (literature tools) ───┤
+                                              │                             │
+                                              ├── M-K (knowledge) ─────────┤
+                                              │                             │
+                                              └── M6 (L3 enforcement) ─────┤
+                                                                            │
+                                                                            ▼
+                                                                       M7 (example) → M8 (release)
+```
+
+M4, M5, M-K can proceed in parallel once M3 lands. M6 needs M-K's playbook prompt to inform the critic agent's checks.

@@ -2,6 +2,12 @@
 
 The methodology is adapted from [rad-research's `respec/`](https://github.com/yanmxa/rad-research/tree/main/respec) with domain-specific terms (radiomics, DeLong, etc.) abstracted out.
 
+## The fabrication problem
+
+[MLR-Bench (NeurIPS 2025)](https://arxiv.org/abs/2505.19955) reports that *"current coding agents frequently (e.g., in 80% of the cases) produce fabricated or invalidated experimental results — posing a major barrier to scientific reliability."* This is the wall ml-researcher exists to break.
+
+The methodology below is not academic ceremony. Every principle, gate, and hook is targeted at a specific failure mode that produces fabricated results in the wild: test-set leakage, missing baselines, mismatched figures vs metrics, silent dataset substitution, scope-creeping fixes that change the research claim. See [`11_related_projects.md`](11_related_projects.md) for the landscape survey and the cross-reference of mechanisms to threats.
+
 ## Core principles
 
 These are enforced by the `critic` agent and by hooks. Violations should be visible in the conversation, not silent.

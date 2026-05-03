@@ -36,6 +36,20 @@ Inspect a dataset's schema and basic stats. Supports HF Hub datasets and local f
 
 **Output**: schema, row count, column types, missingness, sample rows, label distribution if a label column is declared.
 
+### `model_recommend`
+
+Return curated model candidates for a task, backed by the embedded `internal/data/model_registry.yaml` (see [`12_knowledge_integration.md`](12_knowledge_integration.md) §3 Proposal 4). Replaces "what model should I use?" guessing with a vetted, freshness-tagged registry.
+
+**Inputs**:
+- `task` (required): one of `image_classification`, `object_detection`, `segmentation`, `text_classification`, `ner`, `summarization`, `embedding`, `vlm`, `medical_imaging`, `tabular`, `time_series`, `image_generation`, `asr`, ...
+- `n_samples` (int, optional): expected training data size; filters candidates by `min_data` requirement
+- `modality` (optional): `vision`, `text`, `audio`, `multimodal`, `tabular`
+- `constraints` (optional dict): e.g. `{"max_params": "1B", "license": "permissive", "edge_deployable": true}`
+
+**Output**: list of `{id, params, license, min_data, recommended_hparams, pros, cons, failure_modes, sota_tracker, reference_impl, last_verified}` for 5-10 candidates ranked by relevance to the inputs.
+
+**Freshness rule**: each entry carries a `last_verified` date. Entries older than 90 days are flagged in the output (`stale: true`). A scheduled re-verification job updates the registry against HF Hub and paperswithcode.
+
 ## Experiment
 
 ### `experiment_register`
