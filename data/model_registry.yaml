@@ -1,0 +1,466 @@
+# ML Model Registry — ml-researcher
+#
+# Structured ML knowledge base, queried by skills/ml/model-recommend.md.
+# Each entry has a `last_verified` date; entries older than 90 days
+# are flagged stale by model-recommend.
+#
+# Schema (per entry):
+#   id:                 HuggingFace Hub ID or canonical name
+#   task:               primary task category
+#   modality:           vision | text | audio | multimodal | tabular | timeseries
+#   params:             approximate parameter count
+#   license:            permissive | research-only | restricted
+#   min_data:
+#     fine_tune:        minimum samples for fine-tuning to be reasonable
+#     linear_probe:     minimum samples for linear-probe to be reasonable (if applicable)
+#   recommended_hparams: per-task starting points
+#   pros:               list of strengths
+#   cons:               list of weaknesses
+#   failure_modes:      common ways to mess up
+#   sota_tracker:       URL of an authoritative leaderboard / benchmark
+#   reference_impl:     URL of a working training script
+#   last_verified:      ISO date when this entry was last cross-checked
+
+# ============================================================
+# VISION — image classification, detection, segmentation
+# ============================================================
+
+- id: timm/vit_large_patch14_dinov2.lvd142m
+  task: image_classification
+  modality: vision
+  params: 304M
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 10000
+    linear_probe: 100
+  recommended_hparams:
+    lr: 1e-4
+    batch_size: 64
+    epochs: 30
+    optimizer: adamw
+    weight_decay: 0.05
+  pros:
+    - "strong linear-probe with little data"
+    - "robust to label noise"
+    - "general visual representations across domains"
+  cons:
+    - "higher memory than CNN counterparts"
+    - "slower at inference than smaller backbones"
+  failure_modes:
+    - "domain shift on medical / satellite / specialized imagery"
+    - "long-tail classes need re-weighting"
+  sota_tracker: https://paperswithcode.com/sota/image-classification-on-imagenet
+  reference_impl: https://huggingface.co/docs/timm/training_script
+  last_verified: 2026-04-15
+
+- id: facebook/dinov3-vit-l16-518
+  task: image_classification
+  modality: vision
+  params: 304M
+  license: permissive
+  min_data:
+    fine_tune: 5000
+    linear_probe: 50
+  recommended_hparams:
+    lr: 1e-4
+    batch_size: 64
+    epochs: 30
+    optimizer: adamw
+    weight_decay: 0.05
+  pros:
+    - "DINOv3 — improved over DINOv2 on small-data linear probe"
+    - "self-supervised, no labels for pretraining"
+  cons:
+    - "newer, less battle-tested in third-party code"
+  failure_modes:
+    - "needs verification in radiology / specialized domains"
+  sota_tracker: https://paperswithcode.com/sota/self-supervised-image-classification-on
+  reference_impl: https://github.com/facebookresearch/dinov3
+  last_verified: 2026-04-15
+
+- id: PekingU/rtdetr_v2_r50vd
+  task: object_detection
+  modality: vision
+  params: 42M
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 5000
+  recommended_hparams:
+    lr: 1e-4
+    batch_size: 8
+    epochs: 50
+    optimizer: adamw
+  pros:
+    - "53.0 AP @ 114 FPS on T4 (real-time)"
+    - "transformer detector, competitive with two-stage"
+  cons:
+    - "small-object recall weaker than specialized models"
+  failure_modes:
+    - "class imbalance — rebalance loss weights"
+    - "small-object benchmarks may need higher resolution"
+  sota_tracker: https://paperswithcode.com/sota/object-detection-on-coco
+  reference_impl: https://huggingface.co/docs/transformers/model_doc/rt_detr
+  last_verified: 2026-04-15
+
+- id: facebook/sam2-hiera-large
+  task: segmentation
+  modality: vision
+  params: 224M
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 50  # for fine-tune; SAM2 is zero-shot capable
+  recommended_hparams:
+    lr: 5e-5
+    batch_size: 4
+    epochs: 20
+  pros:
+    - "promptable segmentation; works zero-shot"
+    - "video and image, single weights"
+  cons:
+    - "prompt sensitivity — quality depends on prompt strategy"
+    - "small organs / fine structures challenging"
+  failure_modes:
+    - "low-contrast medical imaging requires prompts at multiple scales"
+  sota_tracker: https://paperswithcode.com/sota/semantic-segmentation-on-ade20k
+  reference_impl: https://github.com/facebookresearch/sam2
+  last_verified: 2026-04-15
+
+# ============================================================
+# MULTIMODAL — vision-language
+# ============================================================
+
+- id: google/siglip2-so400m-patch14-384
+  task: vlm
+  modality: multimodal
+  params: 400M
+  license: permissive
+  min_data:
+    fine_tune: 10000
+    linear_probe: 1000
+  recommended_hparams:
+    lr: 5e-5
+    batch_size: 256
+    epochs: 5
+  pros:
+    - "encoder of choice for Qwen3-VL and Gemma 3"
+    - "strong retrieval and zero-shot classification"
+  cons:
+    - "large memory footprint at inference"
+  failure_modes:
+    - "OCR-heavy tasks weaker; combine with text model"
+  sota_tracker: https://huggingface.co/spaces/MMVP/leaderboard
+  reference_impl: https://github.com/huggingface/transformers/blob/main/examples/pytorch/contrastive-image-text/run_clip.py
+  last_verified: 2026-04-15
+
+- id: Qwen/Qwen2.5-VL-7B-Instruct
+  task: vlm
+  modality: multimodal
+  params: 7B
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 10000
+  recommended_hparams:
+    lr: 1e-5
+    batch_size: 4
+    epochs: 3
+  pros:
+    - "strong instruct VLM in the 7B class"
+    - "long-context, video support"
+  cons:
+    - "high VRAM at fine-tune; 80GB+ recommended"
+  failure_modes:
+    - "vision-token blow-up on high-res images; downsample first"
+  sota_tracker: https://huggingface.co/spaces/opencompass/open_vlm_leaderboard
+  reference_impl: https://github.com/QwenLM/Qwen2.5-VL
+  last_verified: 2026-04-15
+
+# ============================================================
+# MEDICAL IMAGING (small-sample / transfer)
+# ============================================================
+
+- id: microsoft/rad-dino
+  task: medical_imaging
+  modality: vision
+  params: 86M
+  license: research-only (check before clinical use)
+  min_data:
+    fine_tune: 100
+    linear_probe: 50
+  recommended_hparams:
+    lr: 1e-4
+    batch_size: 32
+    epochs: 30
+    optimizer: adamw
+  pros:
+    - "DINOv2-style pretraining on radiology"
+    - "strongest small-sample feature extractor for chest X-ray and similar"
+  cons:
+    - "research license — verify for clinical deployment"
+  failure_modes:
+    - "patient-level splits required (NOT slice-level)"
+    - "site/scanner shift hurts generalization"
+  sota_tracker: https://paperswithcode.com/dataset/cxr8
+  reference_impl: https://github.com/microsoft/rad-dino
+  last_verified: 2026-04-20
+
+- id: google/medsiglip-448
+  task: medical_imaging
+  modality: multimodal
+  params: 400M
+  license: permissive
+  min_data:
+    fine_tune: 100
+    linear_probe: 50
+  recommended_hparams:
+    lr: 5e-5
+    batch_size: 64
+    epochs: 10
+  pros:
+    - "medical-domain CLIP-style; image+text retrieval"
+    - "strong on chest X-ray / radiology benchmarks"
+  cons:
+    - "newer; ecosystem less mature than BiomedCLIP"
+  failure_modes:
+    - "non-radiology modalities (path, derm) may underperform"
+  sota_tracker: https://paperswithcode.com/sota/medical-image-classification
+  reference_impl: https://huggingface.co/google/medsiglip-448
+  last_verified: 2026-04-20
+
+- id: google/medgemma-4b-pt
+  task: medical_imaging
+  modality: multimodal
+  params: 4B
+  license: permissive (gemma terms)
+  min_data:
+    fine_tune: 1000
+  recommended_hparams:
+    lr: 5e-5
+    batch_size: 4
+    epochs: 3
+  pros:
+    - "medical multimodal foundation, July 2025"
+    - "QA + classification + report-style outputs"
+  cons:
+    - "needs more data than encoder-only models"
+  failure_modes:
+    - "hallucinations on out-of-distribution findings"
+  sota_tracker: https://paperswithcode.com/sota/medical-question-answering
+  reference_impl: https://huggingface.co/google/medgemma-4b-pt
+  last_verified: 2026-04-20
+
+- id: nnUNet
+  task: segmentation
+  modality: vision
+  params: varies
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 40
+  recommended_hparams:
+    framework: nnUNetv2 default (no manual tuning)
+  pros:
+    - "out-of-the-box state of the art for 3D medical segmentation"
+    - "auto-configures from data fingerprint"
+  cons:
+    - "framework, not a single model — heavier setup"
+  failure_modes:
+    - "thin slices / anisotropic data needs verified preprocessing"
+  sota_tracker: https://decathlon-10.grand-challenge.org/
+  reference_impl: https://github.com/MIC-DKFZ/nnUNet
+  last_verified: 2026-04-20
+
+# ============================================================
+# TABULAR
+# ============================================================
+
+- id: PriorLabs/TabPFN
+  task: tabular
+  modality: tabular
+  params: 7M (foundation; in-context)
+  license: permissive
+  min_data:
+    fine_tune: 0  # in-context, no fine-tune needed
+    linear_probe: 50
+  recommended_hparams:
+    n_ensembles: 32
+    device: cuda
+  pros:
+    - "best small-sample tabular up to ~10K rows / 500 features"
+    - "no hyperparameter tuning"
+    - "calibrated probabilities by default"
+  cons:
+    - "hard size limits"
+    - "synthetic-trained — may underperform on extreme distributions"
+  failure_modes:
+    - "very long-tail label distributions may mis-calibrate"
+  sota_tracker: https://github.com/PriorLabs/TabArena
+  reference_impl: https://github.com/PriorLabs/TabPFN
+  last_verified: 2026-04-15
+
+- id: xgboost
+  task: tabular
+  modality: tabular
+  params: tree-based (no params)
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 1000
+  recommended_hparams:
+    n_estimators: 500
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    early_stopping_rounds: 50
+  pros:
+    - "default workhorse for medium-large tabular"
+    - "ecosystem, GPU support, mature"
+  cons:
+    - "overfits at small N (< 200 rows) without careful CV"
+  failure_modes:
+    - "tuning on test set is the most common bug"
+  sota_tracker: https://github.com/dmlc/xgboost
+  reference_impl: https://xgboost.readthedocs.io/en/stable/python/python_intro.html
+  last_verified: 2026-04-15
+
+- id: catboost
+  task: tabular
+  modality: tabular
+  params: tree-based
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 1000
+  recommended_hparams:
+    iterations: 2000
+    depth: 6
+    learning_rate: 0.03
+    early_stopping_rounds: 100
+  pros:
+    - "native categorical handling — no manual encoding"
+    - "robust defaults"
+  cons:
+    - "slower training than LightGBM / XGBoost"
+  failure_modes:
+    - "high-cardinality categoricals can blow up training time"
+  sota_tracker: https://github.com/catboost/benchmarks
+  reference_impl: https://catboost.ai/docs/concepts/python-quickstart
+  last_verified: 2026-04-15
+
+# ============================================================
+# NLP — embedding, classification, retrieval
+# ============================================================
+
+- id: Qwen/Qwen3-Embedding-8B
+  task: embedding
+  modality: text
+  params: 8B
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 10000
+    linear_probe: 0  # use as-is
+  recommended_hparams:
+    lr: 5e-6
+    batch_size: 32
+  pros:
+    - "top of MTEB leaderboard for retrieval and classification"
+    - "multilingual"
+  cons:
+    - "8B is heavy; consider BGE-M3 or M3-large for inference cost"
+  failure_modes:
+    - "asymmetric query/doc length — verify tokenizer truncation"
+  sota_tracker: https://huggingface.co/spaces/mteb/leaderboard
+  reference_impl: https://huggingface.co/Qwen/Qwen3-Embedding-8B
+  last_verified: 2026-04-15
+
+- id: BAAI/bge-m3
+  task: embedding
+  modality: text
+  params: 568M
+  license: permissive
+  min_data:
+    fine_tune: 5000
+    linear_probe: 0
+  recommended_hparams:
+    lr: 1e-5
+    batch_size: 32
+  pros:
+    - "multilingual, dense+sparse+colbert in one model"
+    - "well-supported across vector DBs"
+  cons:
+    - "smaller than Qwen3-Emb but more deployment-friendly"
+  failure_modes:
+    - "long-doc retrieval — verify chunking strategy"
+  sota_tracker: https://huggingface.co/spaces/mteb/leaderboard
+  reference_impl: https://github.com/FlagOpen/FlagEmbedding
+  last_verified: 2026-04-15
+
+- id: answerdotai/ModernBERT-large
+  task: text_classification
+  modality: text
+  params: 396M
+  license: permissive (apache-2.0)
+  min_data:
+    fine_tune: 1000
+    linear_probe: 100
+  recommended_hparams:
+    lr: 2e-5
+    batch_size: 16
+    epochs: 5
+  pros:
+    - "modern BERT-architecture replacement; strong classification baseline"
+    - "long context (8192 tokens)"
+  cons:
+    - "newer than DeBERTa, less third-party tooling"
+  failure_modes:
+    - "label noise — combine with regularization"
+  sota_tracker: https://paperswithcode.com/sota/text-classification
+  reference_impl: https://github.com/AnswerDotAI/ModernBERT
+  last_verified: 2026-04-15
+
+# ============================================================
+# GENERATIVE
+# ============================================================
+
+- id: black-forest-labs/FLUX.1-dev
+  task: image_generation
+  modality: vision
+  params: 12B
+  license: permissive for non-commercial; commercial license available
+  min_data:
+    fine_tune: 1000  # full fine-tune; LoRA needs ≥10
+  recommended_hparams:
+    lr: 1e-5
+    batch_size: 1
+    rank: 16  # for LoRA
+  pros:
+    - "best-in-class open-weight image generation as of 2025-2026"
+    - "strong text rendering"
+  cons:
+    - "12B is heavy; LoRA recommended for fine-tune"
+    - "license terms — check commercial use"
+  failure_modes:
+    - "anatomy errors — common with all current diffusion models"
+  sota_tracker: https://artificialanalysis.ai/text-to-image/leaderboard
+  reference_impl: https://github.com/black-forest-labs/flux
+  last_verified: 2026-04-15
+
+- id: openai/whisper-large-v3
+  task: asr
+  modality: audio
+  params: 1.55B
+  license: permissive (mit)
+  min_data:
+    fine_tune: 100  # hours of audio for domain adaptation
+  recommended_hparams:
+    lr: 1e-5
+    batch_size: 16
+    epochs: 3
+  pros:
+    - "robust multilingual ASR; tested across noise conditions"
+    - "ecosystem support"
+  cons:
+    - "noisy-domain WER jumps to ~30% (e.g., medical dictation in clinic)"
+    - "code-switching weak"
+  failure_modes:
+    - "speaker diarization missing — pair with WavLM or pyannote"
+  sota_tracker: https://github.com/openai/whisper
+  reference_impl: https://huggingface.co/docs/transformers/model_doc/whisper
+  last_verified: 2026-04-15
