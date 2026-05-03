@@ -1,66 +1,24 @@
 # ML Researcher — Specification
 
-> ML Research Engineer Agent for experiments, training, and evaluation
+The ml-researcher specification has been split into a multi-document set under [`spec/`](spec/).
 
-## Agent Role
+Start with [`spec/README.md`](spec/README.md) for the table of contents and reading order.
 
-ML Researcher is a specialized agent for machine learning research workflows. It handles:
-- Experiment design and execution
-- Training pipeline management
-- Model evaluation and benchmarking
-- Research documentation and reproducibility
+## Quick links
 
-## Architecture
+| Topic | Document |
+|---|---|
+| Why this project exists, three-layer loop model | [`spec/01_overview.md`](spec/01_overview.md) |
+| Relationship to `gen-code`, build & sync strategy | [`spec/02_architecture.md`](spec/02_architecture.md) |
+| Research project directory layout | [`spec/03_project_structure.md`](spec/03_project_structure.md) |
+| Lifecycle stages, records, guardrails | [`spec/04_methodology.md`](spec/04_methodology.md) |
+| Built-in agents | [`spec/05_agents.md`](spec/05_agents.md) |
+| ML-specific tools | [`spec/06_tools.md`](spec/06_tools.md) |
+| Slash commands | [`spec/07_commands.md`](spec/07_commands.md) |
+| Hook-enforced methodology guardrails | [`spec/08_hooks.md`](spec/08_hooks.md) |
+| Build tags & submodule pinning | [`spec/09_build.md`](spec/09_build.md) |
+| v0.1 implementation roadmap | [`spec/10_milestones.md`](spec/10_milestones.md) |
 
-```
-ML Researcher
-├── Core Agent (inherited from Gen Code)
-│   ├── LLM Provider abstraction (multi-provider: Anthropic, OpenAI, Google, Moonshot, Alibaba, MiniMax)
-│   ├── Tool system & MCP integration
-│   └── Session management
-├── ML-Specific Components
-│   ├── Experiment Tracker
-│   ├── Training Controller
-│   └── Evaluation Engine
-└── Knowledge Base (internal ML playbook)
-```
+## Status
 
-## ML Agents
-
-| Agent | Capability |
-|-------|------------|
-| **Researcher** | Literature review, architecture exploration, hypothesis generation |
-| **Experimenter** | Run training, track metrics, manage hyperparameters |
-| **Evaluator** | Benchmark models, generate evaluation reports |
-| **DataHandler** | Data preprocessing, augmentation, pipeline management |
-
-## Communication
-
-All ML agents communicate via [Bell](https://github.com/genai-io/bell) event bus:
-
-```
-ml.experiment.started
-ml.training.progress
-ml.evaluation.completed
-ml.model.registered
-```
-
-## Integration
-
-- **Inherits from Gen Code**: Core agent functionality, tool system, session management
-- **Managed by Orchestrator**: Lifecycle controlled by [orchestrator](https://github.com/genai-io/orchestrator)
-- **Uses Bell**: Pub/sub for experiment events and inter-agent communication
-
-## Knowledge Integration
-
-ML Researcher embeds ML knowledge via:
-- **Static playbook**: training tricks, model architectures, hyperparameter的经验值
-- **Dynamic search**: integrate with search tools for latest papers/techniques
-- **Auto-research**: ability to autonomously explore and update knowledge
-
-## Related
-
-- [Gen Code](https://github.com/genai-io/gen-code) — General-purpose coding agent (base)
-- [Orchestrator](https://github.com/genai-io/orchestrator) — Agent lifecycle manager
-- [Bell](https://github.com/genai-io/bell) — Event bus for inter-agent messaging
-- [Spec](https://github.com/genai-io/spec) — Overall system architecture
+v0.1 spec — pre-implementation. Nothing in this repo is built yet; the spec is the artifact under iteration.
