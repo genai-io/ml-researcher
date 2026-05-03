@@ -18,6 +18,8 @@ Spec documents are numbered to suggest a reading order for newcomers:
 | [`08_hooks.md`](08_hooks.md) | Methodology enforcement via hooks |
 | [`09_build.md`](09_build.md) | Build tag strategy, submodule pinning, sync workflow |
 | [`10_milestones.md`](10_milestones.md) | v0.1 implementation roadmap |
+| [`11_related_projects.md`](11_related_projects.md) | Landscape survey: AIDE, AI-Scientist, MLE-bench, RD-Agent, MLR-Bench, gaps ml-researcher fills |
+| [`12_knowledge_integration.md`](12_knowledge_integration.md) | Embedding ML domain expertise: techniques, model taxonomy, registry design |
 
 ## Influences
 
