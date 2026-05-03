@@ -44,7 +44,7 @@ gbm-tumor-purity/
 ├── README.md                 # filled with topic, date, current phase
 ├── CLAUDE.md                 # ml-researcher system prompt
 ├── .claude/                  # agents/skills/commands/hooks (auto-loaded by Claude Code)
-├── respec/                   # methodology templates (rad-research-derived)
+├── respec/                   # methodology templates
 ├── research/                 # progress.md, data_understanding.md, ... (stubs)
 ├── data/
 │   ├── model_registry.yaml   # structured ML knowledge base
@@ -82,7 +82,6 @@ The agent always knows which loop is active and applies the corresponding discip
 
 | Source | What ml-researcher takes |
 |---|---|
-| [rad-research](https://github.com/yanmxa/rad-research) | Lifecycle stages; `respec/` templates; iteration trace; methodology guardrails (test-set isolation, baseline mandatory, simple-first) |
 | [huggingface/ml-intern](https://github.com/huggingface/ml-intern) | ML-domain expertise as opinionated system prompt; pre-flight checklists; hardware sizing; OOM recovery |
 | [karpathy/autoresearch](https://github.com/karpathy/autoresearch) | Single-file edit + git-as-ledger + TSV experiment log + fixed-budget loop |
 
@@ -134,7 +133,6 @@ Full design is in [`spec/`](spec/):
 
 - [genai-io/spec](https://github.com/genai-io/spec) — GenAI Foundry spec
 - [genai-io/gen-code](https://github.com/genai-io/gen-code) — Open-source AI agent CLI
-- [yanmxa/rad-research](https://github.com/yanmxa/rad-research) — Reference research project (radiomics)
 
 ## License
 
