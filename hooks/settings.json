@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "_comment": "Methodology hooks for ml-researcher. Merged into the project's .claude/settings.json by init.sh. Project-defined hooks take precedence — to disable a default, list its name in mlr.disabledHooks.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "_id": "raw-data-immutable",
+        "matcher": "Write|Edit",
+        "if": "Write(data/raw/**) || Edit(data/raw/**)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/raw_data_guard.sh",
+            "statusMessage": "Checking raw data immutability"
+          }
+        ]
+      },
+      {
+        "_id": "test-set-guard",
+        "matcher": "Read|Bash",
+        "if": "Read(data/splits/test/**) || Bash(*data/splits/test*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/test_set_guard.sh",
+            "statusMessage": "Checking test-set lock"
+          }
+        ]
+      },
+      {
+        "_id": "preflight-experiment-run",
+        "matcher": "exp-run",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/preflight.sh",
+            "statusMessage": "Running pre-flight checklist"
+          }
+        ]
+      },
+      {
+        "_id": "phase-advance-gate",
+        "matcher": "phase-advance",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/phase_gate.sh",
+            "statusMessage": "Verifying phase advancement requirements"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "_id": "trace-append-after-exp-run",
+        "matcher": "exp-run",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/trace_append.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "_id": "inject-state",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/inject_state.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "_id": "stop-resume-check",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash hooks/stop_resume_check.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "mlr": {
+    "disabledHooks": []
+  }
+}
