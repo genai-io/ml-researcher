@@ -1,0 +1,19 @@
+# Local dev
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+.python-version
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+
+# Test outputs
+/tmp/
+/out/
+
+# Per-machine experiment artifacts (in research projects, not in this repo)
+# These ARE tracked in this content repo since template/ ships them as stubs.

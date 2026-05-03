@@ -1,0 +1,2 @@
+# train/val/test split manifests go here
+# test split is read-only during Selection/Tuning phases
