@@ -1,6 +1,6 @@
 # ML Researcher Specification
 
-> v0.1 spec — pre-implementation. The contents below describe the intended design; nothing is built yet.
+> v0.1 spec — pre-implementation. The contents below describe the intended design; the actual content (`init.sh`, `agents/`, `skills/`, etc.) is being written in parallel.
 
 ## Reading Order
 
@@ -9,17 +9,18 @@ Spec documents are numbered to suggest a reading order for newcomers:
 | File | Topic |
 |---|---|
 | [`01_overview.md`](01_overview.md) | Why ml-researcher exists; the three-layer loop model |
-| [`02_architecture.md`](02_architecture.md) | Relationship to `gen-code`; submodule + build tag strategy |
+| [`02_architecture.md`](02_architecture.md) | Zero-install model; `init.sh` is the only delivery; multi-runtime support |
 | [`03_project_structure.md`](03_project_structure.md) | Research project directory layout |
 | [`04_methodology.md`](04_methodology.md) | Lifecycle stages, records, guardrails |
-| [`05_agents.md`](05_agents.md) | Built-in agents and their tool subsets |
-| [`06_tools.md`](06_tools.md) | ML-specific tools |
+| [`05_agents.md`](05_agents.md) | Built-in subagents and their roles |
+| [`06_tools.md`](06_tools.md) | Skills and Python scripts (no custom tools) |
 | [`07_commands.md`](07_commands.md) | Slash commands |
 | [`08_hooks.md`](08_hooks.md) | Methodology enforcement via hooks |
-| [`09_build.md`](09_build.md) | Build tag strategy, submodule pinning, sync workflow |
+| [`09_packaging.md`](09_packaging.md) | Install model, versioning, distribution |
 | [`10_milestones.md`](10_milestones.md) | v0.1 implementation roadmap |
 | [`11_related_projects.md`](11_related_projects.md) | Landscape survey: AIDE, AI-Scientist, MLE-bench, RD-Agent, MLR-Bench, gaps ml-researcher fills |
 | [`12_knowledge_integration.md`](12_knowledge_integration.md) | Embedding ML domain expertise: techniques, model taxonomy, registry design |
+| [`TODO.md`](TODO.md) | Backlog: things explicitly out of scope for v0.1 |
 
 ## Influences
 
@@ -31,14 +32,13 @@ This spec synthesizes three sources:
 
 See [`01_overview.md`](01_overview.md) for how these are combined.
 
-## Open Questions (v0.1)
+## Decisions locked (v0.1)
 
-The following decisions are tentative and may change before M1:
-
-1. **Binary name**: `mlr` (current default). Alternatives considered: `mlrun`, `lab`, `fwd`.
-2. **Project config dir**: `.mlr/` (current default). Inheriting `.gen/` is also possible.
-3. **L1 metric scope**: single primary metric with optional secondaries (current default), or multi-metric Pareto.
-4. **`gen-code` build tag**: requires upstream change. Alternative: maintain a fork until the tag is upstreamed.
-5. **`respec/` flavor**: ship a domain-neutral version; project-level overrides for domain specialization (e.g. radiomics, NLP, RL).
-
-These are tracked in [`10_milestones.md`](10_milestones.md).
+| Question | Decision |
+|---|---|
+| Delivery vehicle | `init.sh` curl-bash; **no plugin install, no binary, no package manager** |
+| Project config dir | `.claude/` (Claude Code default); `.gen/` for gen-code; `.codex/` for Codex |
+| Multi-runtime support | First-class: Claude Code + gen-code; best-effort: Codex |
+| L1 metric scope | Single primary metric; optional secondary metrics declared per project |
+| `respec/` flavor | Domain-neutral default; project-level overrides via `playbook.md` |
+| Standalone binary | Deferred indefinitely; tracked in [`TODO.md`](TODO.md) |

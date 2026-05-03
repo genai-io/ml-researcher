@@ -1,196 +1,164 @@
-# 06 — ML Tools
+# 06 — Skills and Scripts
 
-ml-researcher inherits the full gen-code tool set (`Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Agent`, `WebFetch`, `WebSearch`, etc.) and adds ML-domain tools below. Each tool is registered at startup in `cmd/mlr/main.go` and lives under `internal/ml/`.
+ml-researcher does not implement custom tools as Go code. Domain-specific behavior is delivered as **skills** (markdown files the agent loads on demand) and **scripts** (small Python helpers invoked from skills via Bash). The agent runtime (Claude Code, gen-code, Codex) already provides the primitive tools (Read, Write, Edit, Bash, Glob, Grep, Agent, WebFetch, WebSearch) — skills compose them into ML-domain workflows.
 
-## Literature
+## Why skills, not custom tools
 
-### `paper_search`
+| | Custom tool (Go / MCP) | Skill (markdown) | Skill + Python script |
+|---|---|---|---|
+| Implementation cost | High (Go code, schema, daemon) | One markdown file | Markdown + small `.py` |
+| Where it runs | Inside binary or external server | Inside the LLM's reasoning, using existing tools | Inside Bash, called by skill |
+| Cross-runtime | Per-runtime port | Identical across runtimes | Identical across runtimes |
+| Strict typing | Yes (JSON Schema) | No (LLM interprets markdown) | Loose (script's CLI/JSON) |
+| Update friction | Rebuild binary or server | Edit markdown, save | Edit markdown or `.py` |
+| Best for | Heavy compute, stateful APIs | Recipes, methodology, workflow steps | Statistical computation, plots |
 
-Search papers across HF Papers, arxiv, and Semantic Scholar.
+Most of ml-researcher's "tools" are recipes: "to register an experiment, run these git commands and create these files." That's a skill. The few that need real computation (bootstrap CI, DeLong test, figure rendering) are skills + Python scripts.
 
-**Inputs**: `query` (string, required), `year_min` (int), `limit` (int, default 10), `source` (one of `hf|arxiv|s2|all`, default `all`).
+## Skill organization
 
-**Output**: list of `{paper_id, title, authors, year, abstract, source, url}`.
+Skills live in `skills/` and are organized by domain:
 
-### `paper_read`
-
-Fetch the body of a paper as markdown. Prefers ar5iv → arxiv HTML → arxiv PDF (last resort).
-
-**Inputs**: `paper_id` (string), `sections` (optional list, default `["methodology", "experiments", "results"]` — abstract is intentionally not default).
-
-**Output**: markdown content of requested sections, with figure/table references preserved.
-
-### `citation_graph`
-
-Traverse the citation graph from a seed paper.
-
-**Inputs**: `seed_paper_id`, `direction` (`in|out|both`, default `out`), `depth` (int, default 1), `limit` (int, default 50).
-
-**Output**: list of papers with citation context.
-
-### `dataset_inspect`
-
-Inspect a dataset's schema and basic stats. Supports HF Hub datasets and local files (csv, parquet, jsonl, image folders).
-
-**Inputs**: `path_or_id`, `n_sample` (default 5).
-
-**Output**: schema, row count, column types, missingness, sample rows, label distribution if a label column is declared.
-
-### `model_recommend`
-
-Return curated model candidates for a task, backed by the embedded `internal/data/model_registry.yaml` (see [`12_knowledge_integration.md`](12_knowledge_integration.md) §3 Proposal 4). Replaces "what model should I use?" guessing with a vetted, freshness-tagged registry.
-
-**Inputs**:
-- `task` (required): one of `image_classification`, `object_detection`, `segmentation`, `text_classification`, `ner`, `summarization`, `embedding`, `vlm`, `medical_imaging`, `tabular`, `time_series`, `image_generation`, `asr`, ...
-- `n_samples` (int, optional): expected training data size; filters candidates by `min_data` requirement
-- `modality` (optional): `vision`, `text`, `audio`, `multimodal`, `tabular`
-- `constraints` (optional dict): e.g. `{"max_params": "1B", "license": "permissive", "edge_deployable": true}`
-
-**Output**: list of `{id, params, license, min_data, recommended_hparams, pros, cons, failure_modes, sota_tracker, reference_impl, last_verified}` for 5-10 candidates ranked by relevance to the inputs.
-
-**Freshness rule**: each entry carries a `last_verified` date. Entries older than 90 days are flagged in the output (`stale: true`). A scheduled re-verification job updates the registry against HF Hub and paperswithcode.
-
-## Experiment
-
-### `experiment_register`
-
-Create a new experiment under `experiments/EXPxxx_<name>/` and a corresponding git branch `mlr/exp/<id>`.
-
-**Inputs**: `name` (short slug), `motivation` (free text), `parent_exp` (optional, defaults to current best).
-
-**Output**: assigned experiment ID, paths created.
-
-### `experiment_run`
-
-Execute the experiment's `train.py` (or configured entry point) with output redirection and timeout.
-
-**Inputs**: `exp_id`, `budget` (e.g. `5min`, `1h`, default project setting), `entry` (default `train.py`), `env` (extra environment vars).
-
-**Output**: exit status, log path, wall-clock duration.
-
-**Behavior**: stdout/stderr redirected to `experiments/EXPxxx/run.log`; never to the agent's tool result. The agent uses `metric_grep` afterwards to read what it needs.
-
-### `metric_grep`
-
-Extract metric lines from `run.log` with strict format.
-
-**Inputs**: `exp_id`, `keys` (list of metric names, e.g. `["val_auc", "peak_vram_mb"]`).
-
-**Output**: dict of `{key: value}` or empty if not found.
-
-**Format contract**: the experiment's `train.py` must print metrics on lines starting with `<key>:` (e.g., `val_auc: 0.715`). This is enforced by the `experimenter` system prompt.
-
-### `git_keep_or_reset`
-
-Advance or reset the experiment branch based on the latest decision.
-
-**Inputs**: `decision` (`keep|reset|crash`).
-
-**Behavior**:
-- `keep`: leave the latest commit; the branch advances.
-- `reset`: `git reset --hard HEAD~1` on the experiment branch.
-- `crash`: leave the commit but mark the run as crashed in the ledger.
-
-### `ledger_append`
-
-Append a row to `experiments/ledger.tsv`.
-
-**Columns** (tab-separated):
 ```
-exp_id  commit  primary_metric  metric_value  status  description
+skills/
+├── ml/                              # ML domain knowledge
+│   ├── model-recommend.md           # query model_registry.yaml; return curated picks
+│   ├── medical-small-sample-transfer.md
+│   ├── tabular-tabpfn-vs-xgboost.md
+│   ├── vision-classification-fine-tune.md
+│   ├── multimodal-vlm-finetune-siglip2.md
+│   ├── seg-sam2-finetune.md
+│   ├── nlp-classification-deberta-or-modernbert.md
+│   ├── embeddings-mteb-pick.md
+│   ├── image-gen-flux-lora.md
+│   ├── asr-whisper-or-parakeet.md
+│   ├── dpo-data-conversion.md
+│   ├── grpo-rewards.md
+│   └── oom-recovery-checklist.md
+│
+├── experiment/                      # L1/L2 loop mechanics
+│   ├── exp-register.md              # create experiments/EXPxxx/ + git branch
+│   ├── exp-run.md                   # python train.py > run.log 2>&1; timeout
+│   ├── metric-grep.md               # grep "^<key>:" run.log
+│   ├── git-keep-or-reset.md         # advance branch or revert
+│   └── ledger-append.md             # tab-separated append to ledger.tsv
+│
+└── methodology/                     # L3 lifecycle and audit
+    ├── phase-advance.md             # check gate requirements; advance phase
+    ├── checklist-verify.md          # pre-flight: baseline, dataset format, ...
+    ├── iteration-log.md             # structured append to iteration_trace.md
+    ├── bootstrap-ci.md              # invoke scripts/bootstrap_ci.py
+    ├── delong-test.md               # invoke scripts/delong_test.py
+    ├── train-monitor.md             # tail run.log; classify divergence/oom/nan
+    └── figure-render.md             # invoke scripts/figure_render.py
 ```
 
-**Inputs**: all column values, plus optional secondary metrics as JSON in a final column.
+## Skill format
 
-## Methodology
+Standard runtime convention — markdown with YAML frontmatter:
 
-### `phase_advance`
+```markdown
+---
+name: model-recommend
+description: Recommend ML models from the registry given a task, n_samples, and modality
+allowed-tools: Read, Grep
+---
 
-Advance the L3 lifecycle phase. Blocks if the gate's required records are missing (see [`04_methodology.md`](04_methodology.md) and [`08_hooks.md`](08_hooks.md)).
+# When to use
 
-**Inputs**: `target_phase` (one of the 6 phases).
+User asks "what model should I use for X" or "which architectures are appropriate for <task> with <n_samples> data".
 
-**Output**: success or list of missing requirements.
+# Steps
 
-### `iteration_log`
+1. Read `data/model_registry.yaml` (project root).
+2. Filter entries:
+   - `task` matches the user's task
+   - `min_data.fine_tune` <= user's n_samples (if fine-tune mode)
+   - any explicit constraint (license, modality, max_params)
+3. Sort by relevance.
+4. Format each candidate as one bullet: `{id}` — {pros[0]}; needs {min_data.fine_tune}+ samples; license: {license}; verified {last_verified}.
+5. If `last_verified > 90 days ago`, prefix with `[STALE]`.
 
-Append an entry to `research/iteration_trace.md` with structured fields.
+# Example
 
-**Inputs**: `exp_id`, `motivation`, `change_summary`, `data_version`, `parameters` (dict), `result` (free text), `decision` (`accept|reject`), `next_step`.
+User: "I have 270 MRI cases for tumor purity prediction"
+You: read registry → filter task=medical_imaging modality=vision min_data.fine_tune<=270 → return RadDINO, BiomedCLIP, MedGemma-4B with notes.
+```
 
-### `checklist_verify`
+## Scripts (`scripts/`)
 
-Run pre-flight checks. Used as a manual or hook-triggered tool.
+Small, single-purpose Python files. Each one is invoked by a skill via Bash with explicit CLI arguments. Output is JSON on stdout.
 
-**Inputs**: `kind` (one of `pre_experiment`, `pre_phase_advance`, `pre_finalize`).
+```
+scripts/
+├── bootstrap_ci.py
+├── delong_test.py
+├── figure_render.py
+└── README.md
+```
 
-**Output**: list of `{check, passed, detail}`.
+Conventions:
+- One responsibility per script.
+- CLI: `--input <path>` for files, `--out <path>` if saving, primary args positional.
+- Output: a single line of JSON to stdout for parsable results; multi-line human text only for `--help`.
+- Dependencies: standard scientific Python (numpy, scipy, scikit-learn, pandas, matplotlib). The user installs these; ml-researcher does not bundle them.
 
-Pre-experiment checks (drawn from ml-intern):
-- Dataset format matches training method
-- `push_to_hub`/equivalent set if persisting
-- Timeout justified vs estimated runtime
-- Reference implementation cited
-- Monitoring configured
+Example skill+script pair:
 
-### `bootstrap_ci`
+`skills/methodology/bootstrap-ci.md`:
+```markdown
+---
+name: bootstrap-ci
+description: Compute bootstrap confidence interval for a metric on (preds, labels) arrays
+allowed-tools: Bash, Read
+---
+Run `python scripts/bootstrap_ci.py --preds <p> --labels <l> --metric <m> --n-iter 1000`.
+The script prints a JSON line: {"point": ..., "low": ..., "high": ..., "n_iter": 1000}.
+Parse it and report. If file paths are not absolute, resolve from project root.
+```
 
-Bootstrap confidence interval for a metric.
+`scripts/bootstrap_ci.py`:
+```python
+#!/usr/bin/env python3
+import argparse, json, numpy as np
+# ... small implementation, ~30 lines ...
+print(json.dumps({"point": point, "low": lo, "high": hi, "n_iter": n_iter}))
+```
 
-**Inputs**: `predictions` (array), `labels` (array), `metric` (e.g., `auc`, `accuracy`, `f1`), `n_iter` (default 1000), `alpha` (default 0.05).
+## What about the things in earlier drafts called "tools"
 
-**Output**: `{point, low, high, n_iter}`.
+The earlier draft of this document listed `paper_search`, `dataset_inspect`, `model_recommend`, `experiment_register`, etc. as Go-coded tools. They are now all skills:
 
-### `delong_test`
-
-DeLong test for paired AUC comparison.
-
-**Inputs**: `preds_a`, `preds_b`, `labels`.
-
-**Output**: `{auc_a, auc_b, z, p}`.
-
-### `figure_render`
-
-Render a figure via a small Python helper script and write to `results/figures/` or `experiments/EXPxxx/figures/`.
-
-**Inputs**: `kind` (`roc`, `calibration`, `confusion`, `learning_curve`, `comparison_bar`, ...), `data` (path or inline), `out_path`.
-
-## Monitoring
-
-### `train_monitor`
-
-Stream-read `run.log` of a running experiment, classify lines, surface alerts.
-
-**Inputs**: `exp_id`, `since` (timestamp or line offset), `signals` (default `["divergence", "overfitting", "oom", "nan"]`).
-
-**Output**: list of `{ts, signal, line, severity}`.
-
-Detection rules (drawn from ml-intern v3 prompt):
-- divergence: loss increase > 2× over last N steps
-- overfitting: train_metric improving while val_metric degrading
-- oom: stderr contains `CUDA out of memory` / equivalent
-- nan: any metric line with `nan` / `inf`
-
-### `oom_recover`
-
-Suggest the next OOM mitigation step. Implements the ml-intern ladder prescriptively:
-
-1. Reduce `per_device_train_batch_size`, increase `gradient_accumulation_steps` proportionally.
-2. Enable `gradient_checkpointing=True`.
-3. Move to a larger GPU tier.
-
-**Inputs**: `current_config` (dict), `attempt_history` (list of prior tries).
-
-**Output**: `{recommended_change, justification}`. Rejects scope-changing fixes (e.g. SFT → LoRA) per the ml-intern rule.
-
-## Tool permission classes (default)
-
-| Tool | Default permission |
+| Earlier "tool" | Now |
 |---|---|
-| `paper_search`, `paper_read`, `citation_graph`, `dataset_inspect` | auto-allow (read-only) |
-| `experiment_register`, `experiment_run`, `metric_grep`, `ledger_append`, `iteration_log` | auto-allow (project-scoped) |
-| `git_keep_or_reset`, `phase_advance` | ask (state-mutating) |
-| `Write` to `data/raw/**` | hard-deny via hook |
-| `Write` to `data/splits/test/**` during phases ∈ {Selection, Tuning} | hard-deny via hook |
-| `figure_render`, `bootstrap_ci`, `delong_test` | auto-allow |
-| `train_monitor`, `oom_recover` | auto-allow (read-only / advisory) |
+| `paper_search` | skill `ml/paper-search.md` (uses `WebFetch` against arxiv / HF Papers / Semantic Scholar) |
+| `paper_read` | skill `ml/paper-read.md` (uses `WebFetch` for ar5iv) |
+| `citation_graph` | skill `ml/citation-graph.md` (uses `WebFetch` for Semantic Scholar) |
+| `dataset_inspect` | skill `ml/dataset-inspect.md` (uses `Bash` + HF datasets) |
+| `model_recommend` | skill `ml/model-recommend.md` (reads `data/model_registry.yaml`) |
+| `experiment_register` | skill `experiment/exp-register.md` |
+| `experiment_run` | skill `experiment/exp-run.md` |
+| `metric_grep` | skill `experiment/metric-grep.md` |
+| `git_keep_or_reset` | skill `experiment/git-keep-or-reset.md` |
+| `ledger_append` | skill `experiment/ledger-append.md` |
+| `phase_advance` | skill `methodology/phase-advance.md` (slash command also exists) |
+| `iteration_log` | skill `methodology/iteration-log.md` |
+| `checklist_verify` | skill `methodology/checklist-verify.md` |
+| `bootstrap_ci` | skill `methodology/bootstrap-ci.md` + `scripts/bootstrap_ci.py` |
+| `delong_test` | skill `methodology/delong-test.md` + `scripts/delong_test.py` |
+| `figure_render` | skill `methodology/figure-render.md` + `scripts/figure_render.py` |
+| `train_monitor` | skill `methodology/train-monitor.md` |
+| `oom_recover` | skill `ml/oom-recovery-checklist.md` |
+
+## Permissions
+
+Skill execution uses the runtime's existing tools — so permission questions reduce to:
+
+| Used inside skill | Permission concern |
+|---|---|
+| `Read` | always allowed (no risk) |
+| `WebFetch` | usually allowed; runtime may prompt for unknown domains |
+| `Bash` | gated by runtime's bash policy + project hooks |
+| `Edit`, `Write` | gated by hooks (e.g., `data/raw/**` is hard-blocked; see [`08_hooks.md`](08_hooks.md)) |
+
+There is no separate ml-researcher permission system. Hooks enforce methodology rules (no writing to raw data, test set locked during selection/tuning); the runtime enforces general safety.

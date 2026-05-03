@@ -8,11 +8,13 @@ A research project is a directory. The directory is the unit of reproducibility,
 my-research/
 ├── README.md                        # main entry point
 │
-├── .mlr/                            # project agent config
+├── .claude/                         # project agent config (Claude Code default)
 │   ├── settings.json                # permissions, env, hooks
 │   ├── agents/                      # project-specific agent overrides (optional)
 │   ├── commands/                    # project-specific slash commands (optional)
 │   ├── mcp.json                     # project MCP servers (optional)
+│   ├── plugins/
+│   │   └── ml-researcher/           # ml-researcher plugin, project-local copy (optional)
 │   └── playbook.md                  # domain-specific decisions, rationale, conventions
 │
 ├── respec/                          # methodology templates (copied at init)
@@ -72,7 +74,7 @@ my-research/
 | Directory | What lives here | Who writes |
 |---|---|---|
 | `README.md` | Project entry, current state, key results, navigation | agent + human |
-| `.mlr/` | Agent configuration scoped to this project | human (rare); agent (during init) |
+| `.claude/` | Agent configuration scoped to this project (gen-code reads `.gen/`; structure is identical) | human (rare); agent (during init) |
 | `respec/` | Methodology templates; do not fill with project results | template; copied at init |
 | `research/` | Project-instantiated methodology records | agent + human |
 | `data/raw/` | Original data; never modified | human; protected by hook |
@@ -112,8 +114,8 @@ my-research/
 
 `papers/`, individual `research/*.md`, and `experiments/EXPxxx/` directories are created on demand by the corresponding agents.
 
-## Why `.mlr/` and not `.gen/`
+## Why `.claude/` (and not a custom `.mlr/`)
 
-ml-researcher's binary loader is configured to read `.mlr/` as the project config root. This avoids confusion when both `mlr` and `gen` are installed and a user runs the wrong one in the wrong directory. The internal config schema is identical to `.gen/` — only the directory name differs.
+The project config directory follows the chosen runtime: `.claude/` for Claude Code, `.gen/` for gen-code, `.codex/` for Codex. `init.sh` writes to whichever directory matches `--runtime`. There is no `.mlr/` — ml-researcher does not introduce a new runtime, so it does not need a new convention.
 
-A future `mlr` may also accept `.gen/` as a fallback if `.mlr/` is absent, to ease migration. This is not part of v0.1.
+The schema inside the config dir is identical across runtimes: `agents/`, `skills/`, `commands/`, `hooks/`. Only the directory name and the prompt-file name (`CLAUDE.md` / `GEN.md` / `AGENTS.md`) differ.
