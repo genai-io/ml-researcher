@@ -24,7 +24,10 @@ EXPECT_COUNT="0"
 if [ -f .mlr-expect-mode ]; then
   EXPECT_MODE="on"
   if [ -f experiments/ledger.tsv ]; then
-    EXPECT_COUNT=$(grep -c '\[EXPECT\]' experiments/ledger.tsv 2>/dev/null || echo 0)
+    # grep -c outputs the count to stdout (even on 0 matches);
+    # the non-zero exit on 0 matches is allowed since we have no -e.
+    EXPECT_COUNT=$(grep -c '\[EXPECT\]' experiments/ledger.tsv 2>/dev/null)
+    EXPECT_COUNT="${EXPECT_COUNT:-0}"
   fi
 fi
 
