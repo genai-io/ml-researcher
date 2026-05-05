@@ -109,9 +109,51 @@ for d in agents skills commands hooks; do
   fi
 done
 
-# System prompt → project prompt file
+# System prompt placement.
+#
+# Gen Code has a first-class "identity" slot in its system prompt, separate
+# from project memory. ml-researcher's prompt is persona-shaped (epistemic
+# stance + methodology), so for gen we install it as an identity at
+# .gen/identities/ml-researcher.md and activate it via .gen/settings.json.
+#
+# Claude Code and Codex don't have identity slots; we write the prompt as
+# project memory (CLAUDE.md / AGENTS.md), which the runtime injects on
+# every turn via system-reminder.
 if [ -f "$SRC/prompts/ml_researcher.md" ]; then
-  cp "$SRC/prompts/ml_researcher.md" "$DEST/$PROMPT_FILE"
+  case "$RUNTIME" in
+    gen)
+      mkdir -p "$DEST/$CFG/identities"
+      {
+        echo '---'
+        echo 'name: ml-researcher'
+        echo 'description: Disciplined ML research engineer; rigorous methodology, anti-fabrication, three-layer loop discipline.'
+        echo '---'
+        echo
+        cat "$SRC/prompts/ml_researcher.md"
+      } > "$DEST/$CFG/identities/ml-researcher.md"
+
+      # Merge identity activation into .gen/settings.json (preserve other keys if present).
+      SETTINGS="$DEST/$CFG/settings.json"
+      if [ -f "$SETTINGS" ]; then
+        # Use python (always present on macOS / most Linux) for safe JSON merge.
+        python3 - "$SETTINGS" <<'PY' 2>/dev/null || echo '{"identity": "ml-researcher"}' > "$SETTINGS"
+import json, sys
+p = sys.argv[1]
+try:
+    with open(p) as f: data = json.load(f)
+except Exception:
+    data = {}
+data['identity'] = 'ml-researcher'
+with open(p, 'w') as f: json.dump(data, f, indent=2)
+PY
+      else
+        echo '{"identity": "ml-researcher"}' > "$SETTINGS"
+      fi
+      ;;
+    claude|codex)
+      cp "$SRC/prompts/ml_researcher.md" "$DEST/$PROMPT_FILE"
+      ;;
+  esac
 fi
 
 # Project-root assets
@@ -165,7 +207,7 @@ cat <<EOF
 Next steps:
   cd $DEST_ABS
   $RUNTIME
-  > /phase                 # see what's needed to advance the phase
-  > /lit-search "<query>"  # delegate literature triage
-  > /exp-new <name>        # register a baseline experiment
+  > /phase                  # see what's needed to advance the phase
+  > /lit search "<query>"   # delegate literature triage
+  > /exp new <name>         # register a baseline experiment
 EOF

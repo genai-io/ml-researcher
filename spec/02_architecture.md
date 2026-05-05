@@ -73,15 +73,19 @@ ml-researcher/
 
 ## Multi-runtime support
 
-`init.sh` accepts `--runtime claude|gen|codex`. The runtime determines two things — the project-level config directory and the prompt file name — but the content is identical:
+`init.sh` accepts `--runtime claude|gen|codex`. The runtime determines the project-level config directory and **how the persona is delivered**.
 
-| Runtime | Config dir | Prompt file | Status |
+| Runtime | Config dir | Persona delivery | Status |
 |---|---|---|---|
-| Claude Code | `.claude/` | `CLAUDE.md` | First-class |
-| gen-code | `.gen/` | `GEN.md` | First-class |
-| Codex | `.codex/` | `AGENTS.md` | Best-effort (template + prompt + commands work; subagents/hooks compatibility uncertain) |
+| Claude Code | `.claude/` | `CLAUDE.md` (project memory; system-reminder) | First-class |
+| Gen Code | `.gen/` | `.gen/identities/ml-researcher.md` (system prompt slot 0) + `.gen/settings.json` activates it | First-class |
+| Codex | `.codex/` | `AGENTS.md` (project memory) | Best-effort |
 
-Same agents, same skills, same commands. `init.sh` writes them to the right path. Default runtime is `claude`.
+Gen Code has a [first-class identity slot](https://github.com/genai-io/gen-code/blob/main/docs/system-prompt.md) in its system prompt — separate from project memory. ml-researcher's prompt is persona-shaped (epistemic stance + methodology), so it slots in cleanly at slot 0 (`identity`) without polluting project memory (`GEN.md`).
+
+Claude Code and Codex don't yet expose an identity slot, so the persona rides in project memory (`CLAUDE.md` / `AGENTS.md`), which the runtime injects on every turn via the system-reminder channel.
+
+Same agents, same skills, same commands across all three runtimes. Only the persona placement differs. Default runtime is `claude`.
 
 ## init.sh (the only delivery mechanism)
 
@@ -108,7 +112,7 @@ done
 
 case "$RUNTIME" in
   claude) CFG=".claude"; PROMPT="CLAUDE.md" ;;
-  gen)    CFG=".gen";    PROMPT="GEN.md"    ;;
+  gen)    CFG=".gen";    PROMPT="GEN.md"    ;;   # for gen, persona goes to .gen/identities/, not GEN.md
   codex)  CFG=".codex";  PROMPT="AGENTS.md" ;;
   *) echo "unknown runtime: $RUNTIME"; exit 1 ;;
 esac

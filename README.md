@@ -26,12 +26,14 @@ curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh
 cd gbm-tumor-purity && claude
 
 # Inside the agent:
-> /phase                                     # see current phase + advance requirements
-> /lit-search "small-sample radiomics"       # delegate literature triage
-> /exp-new baseline-logistic                 # register a new experiment
-> /exp-loop --metric val_auc --budget 5min   # autoresearch-style optimization
-> /report                                    # draft analysis report
+> /phase                                       # show phase + advance requirements
+> /lit search "small-sample radiomics"         # delegate literature triage
+> /exp new baseline-logistic                   # register an experiment
+> /exp loop --metric val_auc --budget 5min     # autoresearch-style optimization
+> /report draft                                # draft analysis report
 ```
+
+Six unified commands cover the whole lifecycle: `/phase`, `/exp`, `/lit`, `/report`, `/check`, `/audit`. Each takes subcommands (e.g. `/exp new`, `/exp loop`, `/exp list`, `/exp compare`) so the surface stays small and discoverable.
 
 No global install. No `~/.claude/plugins/` dependency. The project carries its own copy of the agent runtime files in `.claude/`, so it works on any machine with Claude Code installed.
 
@@ -80,221 +82,136 @@ The agent always knows which loop is active and applies the corresponding discip
 
 ## Example: end-to-end lifecycle walkthrough
 
-A realistic project: predicting tumor purity from MRI in 270 GBM cases (small-N medical imaging — the regime where methodology matters most).
-
-### Bootstrap
+A realistic project — small-N medical imaging, the regime where methodology matters most. Predicting tumor purity from MRI in 270 GBM cases.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
-  | bash -s -- "GBM tumor purity from MRI"
-cd gbm-tumor-purity-from-mri
-claude
+  | bash -s -- "GBM tumor purity"
+cd gbm-tumor-purity && claude
 ```
 
-The project is now self-contained: `respec/`, `research/` (stubs), `data/raw|derived|splits/`, `experiments/`, `results/`, `papers/`, `.claude/` with all subagents, skills, commands, hooks. Phase = `Data Understanding`.
+Five L3 phases: each is **gated** — you can't advance until requirements are met.
 
-### Phase 1 — Data Understanding
+### 1. Data Understanding
 
 ```
 > /phase
+Current: Data Understanding
+To advance: research/data_understanding.md filled, data/splits/ populated.
 
-Current phase: Data Understanding
-Required to advance to Research Goal:
-  ✗ research/data_understanding.md filled
-  ✗ data/splits/ has at least one populated subdir
+> Help me fill data_understanding.md. 270 patients, pre-op MRI (T1-C, T2),
+> clinical features, tumor purity labels (TP ≥ 60.8% binary).
 ```
 
-Drop your raw data into `data/raw/` (the `raw_data_guard` hook locks it from this point on). Then ask the agent to help fill `research/data_understanding.md`:
+The agent walks the template, enforcing **patient-level splits** (not slice-level) and locking the test split.
 
-```
-> Help me fill data_understanding.md. We have 270 GBM patients with
-> pre-op MRI (T1-C, T2), clinical/molecular tabular features, and
-> tumor purity labels. Threshold TP >= 60.8 % for the binary endpoint.
-```
-
-The agent reads `respec/01_data_understanding.md` and walks you through dataset inventory, sample unit (patient-level), label definition, and **patient-level** splits. The `experimenter` and `critic` agents will later block any slice-level leak.
-
-### Phase 2 — Research Goal
+### 2. Research Goal
 
 ```
 > /phase advance
-✓ Advanced to Research Goal.
+✓ Now in Research Goal.
 
-> Help me draft research_goal.md. Primary endpoint: TP >= 60.8 %
-> binary classification. Compare clinical-only, radiomics-only,
-> combined fusion. Need calibration for clinical use.
+> Primary endpoint TP ≥ 60.8% binary; compare clinical / radiomics
+> / combined; need calibration for clinical use.
 ```
 
-The agent fills the template:
+Fills `research_goal.md`: primary metric `val_auc` + bootstrap CI, baseline = L2 logistic, success criteria, required figures (ROC + calibration + comparison_bar).
 
-- Primary metric: `val_auc` (with bootstrap CI), Brier for calibration, sensitivity/specificity at a clinically motivated threshold
-- Baseline: L2 logistic regression on clinical+VASARI features
-- Success criteria: AUC ≥ 0.65 for clinical, ordering Combined > Clinical > Radiomics
-- Required figures: ROC, calibration, comparison bar
-- Risks: small N, single-center, label noise
-
-### Phase 3 — Model Selection
-
-Use the literature subagent and the model registry:
+### 3. Model Selection
 
 ```
-> /lit-search "small-sample radiomics combined with clinical features"
+> /lit search "small-sample radiomics + clinical fusion"
 
-Spawning literature subagent…
-Appended 5 papers to papers/shortlist.md.
-Recommendation: late-fusion (clinical_score + rad_score) with linear
-SVM is the strongest small-N pattern; use RadDINO or original GLCM
-features for the radiomics encoder.
+Literature subagent appended 5 papers to papers/shortlist.md.
+Recommendation: late-fusion (clinical_score + rad_score) is the
+strongest small-N pattern.
 
-> What models should I consider for the radiomics arm?
+> Which radiomics encoders fit n=270?
 
-Calling skill: model-recommend (task=medical_imaging, n_samples=270)
-- microsoft/rad-dino — DINOv2-style radiology pretraining; fine-tune ≥100; verified 2026-04-20
-- google/medsiglip-448 — multimodal medical CLIP; fine-tune ≥100; verified 2026-04-20
-- google/medgemma-4b-pt — needs more data than encoder-only models
-- nnUNet — segmentation, not applicable here
-
-Recommendation: RadDINO for feature extraction; combine with TabPFNv2
-on clinical features via late fusion.
+→ model-recommend skill on data/model_registry.yaml
+  - microsoft/rad-dino  — fine-tune ≥100; verified 2026-04-20
+  - google/medsiglip    — fine-tune ≥100; verified 2026-04-20
+  - google/medgemma-4b  — needs more data than encoder-only
 ```
 
-Fill `research/model_selection.md` with the candidate matrix and shortlist:
+Fills `model_selection.md`. Rejects high-dim wavelet (overfitting risk at N=270).
 
-| Scenario | Model family | Status |
-|---|---|---|
-| Clinical | L2 logistic | shortlisted (baseline) |
-| Radiomics | RBF SVM on original GLCM | shortlisted |
-| Radiomics | RadDINO + linear head | shortlisted |
-| Combined | Late fusion → linear SVM | shortlisted |
-| Combined | High-dim wavelet + auto-feature-selection | rejected (overfitting risk at N=270) |
-
-### Phase 4 — Fine Tuning
-
-Register and run experiments:
+### 4. Fine Tuning
 
 ```
-> /exp-new baseline-clinical-l2
-✓ EXP001_baseline-clinical-l2 registered
-  Branch: mlr/exp/EXP001_baseline-clinical-l2
-  Edit: experiments/EXP001_baseline-clinical-l2/train.py
+> /exp new baseline-clinical-l2
+✓ EXP001 registered, branch mlr/exp/EXP001_baseline-clinical-l2
 
-> /exp-loop --metric val_auc --budget 1min --max-iter 20
-
-Spawning experimenter subagent…
-[EXP001] Iter 1: lr=0.01 C=1.0 → val_auc=0.658 → keep
-[EXP001] Iter 2: lr=0.01 C=0.1 → val_auc=0.661 → keep
-[EXP001] Iter 3: lr=0.01 C=10  → val_auc=0.643 → discard (reset)
+> /exp loop --metric val_auc --budget 1min --max-iter 20
+[EXP001] iter 1: C=1.0  → 0.658 keep
+[EXP001] iter 2: C=0.1  → 0.661 keep
+[EXP001] iter 3: C=10   → 0.643 discard (git reset)
 ...
-Done. Best val_auc=0.661 (commit a8c4e2d). Updated progress.md.
+Best val_auc=0.661.
+
+> /exp new combined-linear-svm
+> /exp loop --metric val_auc
+Best val_auc=0.700 → new current best.
 ```
 
-The L1 loop edits `train.py`, runs `python train.py > run.log 2>&1`, greps `val_auc:`, and `git keep` or `git reset --hard HEAD~1` based on whether the metric improved. Every iteration appends a row to `experiments/ledger.tsv`.
+The L1 loop edits `train.py`, runs `python train.py > run.log 2>&1`, greps `val_auc:`, advances or resets git. Every attempt appends to `experiments/ledger.tsv`.
 
-```
-> /exp-new combined-linear-svm
-> /exp-loop --metric val_auc --budget 5min
-...
-Done. Best val_auc=0.700 → new current best. Updated progress.md.
-```
+### 5. Analysis Report
 
-Try the rejected high-dim direction once anyway, to record it:
-
-```
-> /exp-new high-dim-wavelet
-> /exp-loop --metric val_auc --budget 5min
-
-Done. val_auc=0.757 on val, but the experimenter detected a likely
-overfit (CV vs val gap > 0.05). Recorded in iteration_trace.md as
-"reject — high-dim feature space exceeds N=270 stable regime."
-```
-
-### Phase 5 — Analysis Report
-
-Try to peek at the test set and the hook blocks you:
+The test set is **locked** by the `test_set_guard` hook during Selection/Tuning. Try to peek:
 
 ```
 > Read data/splits/test/labels.csv
-✗ Blocked by test_set_guard hook.
-  Reason: Test set is locked during "Fine Tuning" phase.
-  Reading data/splits/test/** is blocked to prevent leakage.
-  The test set unlocks in the Analysis Report phase.
+✗ Blocked by test_set_guard. Test set locked during Fine Tuning phase.
+```
 
+Advance (which unlocks it for reporting):
+
+```
 > /phase advance
 Spawning critic for audit…
-critic verdict: PASS — baseline registered, splits patient-level,
-no test-set reads in iteration_trace.
+PASS — baseline registered, splits patient-level, no test-set reads.
 ✓ Advanced to Analysis Report.
-```
 
-Now run the analyst:
-
-```
 > /report draft
+analyst subagent computing test AUC + bootstrap CI per model, DeLong
+paired test (clinical vs combined): p=0.46.
 
-Spawning analyst subagent…
-- Reading research_goal.md, ledger.tsv, EXP00* metrics.json
-- Computing test-set AUC + bootstrap 95% CI for each shortlisted model
-- Running DeLong paired test: clinical vs combined → p=0.46 (n.s.)
+| Model      | Test AUC | 95% CI         |
+| Clinical   | 0.661    | (0.513, 0.789) |
+| Radiomics  | 0.637    | (0.495, 0.770) |
+| Combined   | 0.700    | (0.565, 0.814) |
 
-Wrote research/analysis_report.md.
+Combined point estimate is highest; DeLong p=0.46 means the report
+language is "trend toward improvement," not "significantly outperforms."
 
-| Model      | Test AUC | 95% CI         | Brier |
-| Clinical   | 0.661    | (0.513, 0.789) | 0.207 |
-| Radiomics  | 0.637    | (0.495, 0.770) | 0.199 |
-| Combined   | 0.700    | (0.565, 0.814) | 0.199 |
-
-Conclusion: Combined model shows the highest test AUC point estimate
-and meets the predicted ordering (Combined > Clinical > Radiomics).
-DeLong test against clinical: p = 0.46 — language is "trend toward
-improvement," not "significantly outperforms."
-
-Spawning critic on the report…
-critic verdict: PASS.
+> /report final
+Promoted figures to results/figures/, tables to results/tables/.
+Updated root README.md with current best.
 ```
 
-```
-> /report finalize
-
-Promoted figures to results/figures/ (roc.png, calibration.png,
-comparison_bar.png). Promoted comparison table to results/tables/.
-Wrote results/reports/final.md and updated root README.md with
-current best.
-```
-
-### What the project looks like at the end
+### What ends up on disk
 
 ```
-gbm-tumor-purity-from-mri/
-├── README.md                   # current best summary
-├── CLAUDE.md
-├── .claude/                    # all subagents/skills/commands/hooks
-├── respec/                     # methodology constitution
-├── research/
-│   ├── progress.md             # phase = Finalized
-│   ├── data_understanding.md   # filled
-│   ├── research_goal.md        # filled, locked
-│   ├── model_selection.md      # filled with candidate matrix
-│   ├── fine_tuning.md          # filled with parameter ranges
-│   ├── iteration_trace.md      # 60+ iterations across 4 experiments
-│   └── analysis_report.md      # finalized, critic PASS
-├── data/{raw,derived,splits}   # test split locked since init
+gbm-tumor-purity/
+├── README.md, CLAUDE.md, .claude/
+├── respec/                       # methodology constitution
+├── research/{progress, data_understanding, research_goal,
+│            model_selection, fine_tuning,
+│            iteration_trace, analysis_report}.md
+├── data/{raw,derived,splits}/    # test split locked since init
 ├── experiments/
-│   ├── ledger.tsv              # 60+ rows; full audit trail
+│   ├── ledger.tsv                # full audit trail of every iteration
 │   ├── EXP001_baseline-clinical-l2/
 │   ├── EXP002_radiomics-rbf-svm/
-│   ├── EXP003_combined-linear-svm/    # ← current best
-│   └── EXP004_high-dim-wavelet/       # rejected, recorded
-├── results/
-│   ├── figures/{roc,calibration,comparison_bar}.png
-│   ├── tables/comparison.csv
-│   └── reports/final.md
+│   ├── EXP003_combined-linear-svm/    ← current best
+│   └── EXP004_high-dim-wavelet/       (rejected, recorded)
+├── results/{figures,tables,reports}/
 ├── papers/{shortlist.md, notes/}
-└── scripts/                    # bootstrap_ci, delong_test, figure_render
+└── scripts/, .git/
 ```
 
-The project is reproducible from `git clone` alone. Every metric in `analysis_report.md` traces back to a specific experiment commit. Every accept/reject decision is in `iteration_trace.md`. Test set was never read until the Analysis phase. No silent overfitting. No fabricated results.
-
-That's the loop ml-researcher exists to make easy.
+Reproducible from `git clone` alone. Every metric traces to a specific commit. Every accept/reject is in `iteration_trace.md`. Test set untouched until Analysis. That's the loop ml-researcher exists to make easy.
 
 ## Influences
 
@@ -319,10 +236,11 @@ That's the loop ml-researcher exists to make easy.
 # Default: Claude Code (subscription billing)
 init.sh "topic"
 
-# Gen Code (API-key)
+# Gen Code — installs as a first-class identity (Channel A persona slot),
+# not project memory. Sets .gen/settings.json: {"identity": "ml-researcher"}.
 init.sh "topic" --runtime gen
 
-# Codex (best-effort)
+# Codex (best-effort) — uses AGENTS.md project memory
 init.sh "topic" --runtime codex
 
 # Initialize in current directory (don't create new dir)
@@ -331,6 +249,16 @@ init.sh "topic" --in-place
 # Pin to a specific ml-researcher version
 init.sh "topic" --ref v0.1.0
 ```
+
+How the persona is delivered per runtime:
+
+| Runtime | Persona location | Channel |
+|---|---|---|
+| Claude Code | `CLAUDE.md` (project root) | system-reminder (project memory) |
+| Gen Code | `.gen/identities/ml-researcher.md` + `.gen/settings.json` | identity slot 0 (system prompt) |
+| Codex | `AGENTS.md` (project root) | system-reminder (project memory) |
+
+For Gen Code, the identity slot is the [first-class persona channel](https://github.com/genai-io/gen-code/blob/main/docs/system-prompt.md) — separate from project memory. ml-researcher's prompt **is** a persona (epistemic stance + methodology), so it slots in cleanly without polluting GEN.md.
 
 ## Specification
 
