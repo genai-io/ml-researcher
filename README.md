@@ -7,92 +7,144 @@
   </p>
   <p align="center">
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square" alt="License"></a>
-    <a href="spec/"><img src="https://img.shields.io/badge/status-v0.1%20spec-orange?style=flat-square" alt="Status"></a>
+    <a href="spec/"><img src="https://img.shields.io/badge/status-v0.1-orange?style=flat-square" alt="Status"></a>
   </p>
 </p>
 
-ml-researcher is a methodology + agent toolkit for machine learning research projects. It bootstraps a self-contained research project directory pre-loaded with subagents, skills, slash commands, hooks, an ML model registry, and methodology templates — all driven by Claude Code, Gen Code, or Codex.
+ml-researcher bootstraps a self-contained ML research project — pre-loaded with subagents, skills, slash commands, hooks, an ML model registry, and methodology templates. Default runtime is [Gen Code](https://github.com/genai-io/gen-code); Claude Code and Codex are supported via `--runtime`.
 
 > **Status**: v0.1 — content under construction. Spec is locked in [`spec/`](spec/).
 
-## Two commands, end-to-end
+---
+
+## Install
+
+You don't install ml-researcher globally. You install it **into a research project**. The project then carries everything it needs and works on any machine with the chosen runtime.
+
+### Path A — start a fresh project (creates a new directory)
 
 ```bash
-# 1. Bootstrap a new research project (anywhere)
 curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
   | bash -s -- "GBM tumor purity"
 
-# 2. Start the agent
-cd gbm-tumor-purity && claude
-
-# Inside the agent:
-> /phase                                       # show phase + advance requirements
-> /lit search "small-sample radiomics"         # delegate literature triage
-> /exp new baseline-logistic                   # register an experiment
-> /exp loop --metric val_auc --budget 5min     # autoresearch-style optimization
-> /report draft                                # draft analysis report
+cd gbm-tumor-purity
+gen     # or: claude / codex
 ```
 
-Six unified commands cover the whole lifecycle: `/phase`, `/exp`, `/lit`, `/report`, `/check`, `/audit`. Each takes subcommands (e.g. `/exp new`, `/exp loop`, `/exp list`, `/exp compare`) so the surface stays small and discoverable.
+The slug `gbm-tumor-purity` is auto-derived from the topic.
 
-No global install. No `~/.claude/plugins/` dependency. The project carries its own copy of the agent runtime files in `.claude/`, so it works on any machine with Claude Code installed.
+### Path B — initialize the current directory
 
-## What `init.sh` produces
+```bash
+cd ~/my-existing-research
 
-A self-contained research project, ready to run:
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
+  | bash -s -- "GBM tumor purity" --in-place
+
+gen
+```
+
+`--in-place` skips the new-directory creation; methodology templates land alongside whatever's already there. Useful when you have raw data or partial code already.
+
+### Runtime selection
+
+```bash
+# Default (recommended): Gen Code
+init.sh "topic"
+
+# Claude Code (subscription billing)
+init.sh "topic" --runtime claude
+
+# Codex (best-effort)
+init.sh "topic" --runtime codex
+```
+
+The runtime determines where the persona is delivered:
+
+| Runtime | Persona location | Channel |
+|---|---|---|
+| **Gen Code** *(default)* | `.gen/identities/ml-researcher.md` + `.gen/settings.json: {"identity": "ml-researcher"}` | identity slot 0 (system prompt) |
+| **Claude Code** | `CLAUDE.md` (project root) | system-reminder (project memory) |
+| **Codex** | `AGENTS.md` (project root) | system-reminder (project memory) |
+
+Gen Code has a [first-class identity slot](https://github.com/genai-io/gen-code/blob/main/docs/system-prompt.md) — separate from project memory. ml-researcher's prompt is persona-shaped, so it slots in cleanly without polluting project memory.
+
+---
+
+## What you get
+
+After init, the project layout:
 
 ```
-gbm-tumor-purity/
-├── README.md                 # filled with topic, date, current phase
-├── CLAUDE.md                 # ml-researcher system prompt
-├── .claude/                  # agents/skills/commands/hooks (auto-loaded by Claude Code)
-├── respec/                   # methodology templates
-├── research/                 # progress.md, data_understanding.md, ... (stubs)
-├── data/
-│   ├── model_registry.yaml   # structured ML knowledge base
-│   ├── raw/  derived/  splits/
+<project>/
+├── README.md, <CLAUDE.md|GEN.md|AGENTS.md as applicable>
+├── .git/                        # initialized with first commit
+├── .<claude|gen|codex>/
+│   ├── settings.json            # hooks + (gen) identity activation
+│   ├── identities/              # gen only — the persona file
+│   ├── agents/                  # 5 subagents
+│   ├── skills/                  # ~16 skills (ml/, experiment/, methodology/)
+│   ├── commands/                # 6 slash commands
+│   └── hooks/                   # 7 methodology hook scripts
+├── respec/                      # methodology constitution (10 principles, 5 phases)
+├── research/                    # progress.md + filled stubs per phase
+├── data/{raw,derived,splits}/   # raw is locked; test split locks during Selection/Tuning
 ├── experiments/
-│   ├── README.md
-│   └── ledger.tsv
-├── results/, papers/
-├── scripts/                  # Python helpers (bootstrap_ci, delong_test, ...)
-└── .git/                     # initialized with first commit
+│   ├── ledger.tsv               # full audit trail
+│   └── EXP*/                    # one dir per experiment
+├── results/{figures,tables,reports}/
+├── papers/
+├── data/model_registry.yaml     # 18-entry curated ML knowledge base
+└── scripts/                     # bootstrap_ci.py, delong_test.py, figure_render.py
 ```
 
-Move it to another machine, `git clone`, `claude` — it works.
+---
 
-## Three-layer loop model
+## The research lifecycle
 
-ml-researcher applies different discipline at three time scales:
+Every project flows through five phases. **Each phase is gated** — the agent (and hooks) prevent advancement until requirements are met.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  L3 · Lifecycle Loop      (days/weeks)                      │
-│   Data → Goal → Selection → Tuning → Report → Revision      │
-├─────────────────────────────────────────────────────────────┤
-│  L2 · Experiment Loop     (hours)                           │
-│   Plan → Research → Sandbox → Submit → Monitor → Decide     │
-├─────────────────────────────────────────────────────────────┤
-│  L1 · Iteration Loop      (minutes)                         │
-│   Edit → Run → Measure → Keep or Reset                      │
-└─────────────────────────────────────────────────────────────┘
+[Bootstrap]
+    │
+    ▼
+1. Data Understanding → 2. Research Goal → 3. Model Selection
+                                              │
+                                              ▼
+                          5. Analysis Report ← 4. Fine Tuning
+                                                  │
+                                                  └─→ (loop within phase 4)
 ```
 
-The agent always knows which loop is active and applies the corresponding discipline. See [`spec/01_overview.md`](spec/01_overview.md).
+Six unified slash commands cover the whole lifecycle:
 
-## Example: end-to-end lifecycle walkthrough
+| Command | Purpose |
+|---|---|
+| `/phase` | Show current phase + advance requirements; `/phase advance` to transition |
+| `/exp` | `new <name>`, `loop`, `list`, `compare` — manage experiments |
+| `/lit` | `search <query>`, `list`, `read <id>` — literature triage |
+| `/report` | `draft`, `final` — produce analysis report |
+| `/check` | Run pre-flight checklist |
+| `/audit` | Spawn critic for methodology audit |
 
-A realistic project — small-N medical imaging, the regime where methodology matters most. Predicting tumor purity from MRI in 270 GBM cases.
+---
+
+## Workflow walkthrough
+
+A realistic small-N project. Five phases; concrete commands at each.
+
+### Phase 0 — Bootstrap (before the agent)
+
+Drop your raw data into `data/raw/` (after init, this directory is **locked** by the `raw_data_guard` hook — you can't accidentally modify it during research).
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
-  | bash -s -- "GBM tumor purity"
-cd gbm-tumor-purity && claude
+cp -r ~/downloads/gbm-mri-cohort/* gbm-tumor-purity/data/raw/
+cd gbm-tumor-purity && gen
 ```
 
-Five L3 phases: each is **gated** — you can't advance until requirements are met.
+### Phase 1 — Data Understanding
 
-### 1. Data Understanding
+Goal: write `research/data_understanding.md` so any reader can answer *what data is this, what does it support, what doesn't it*.
 
 ```
 > /phase
@@ -103,21 +155,34 @@ To advance: research/data_understanding.md filled, data/splits/ populated.
 > clinical features, tumor purity labels (TP ≥ 60.8% binary).
 ```
 
-The agent walks the template, enforcing **patient-level splits** (not slice-level) and locking the test split.
+The agent walks the template, enforcing **patient-level splits** (not slice-level — patient leakage is the most common small-sample bug) and **locking the test split** before any model is trained.
 
-### 2. Research Goal
+When ready: `/phase advance`.
+
+### Phase 2 — Research Goal
+
+Goal: write `research/research_goal.md` so the question, success criteria, and statistical reporting language are committed before any modeling begins.
 
 ```
 > /phase advance
 ✓ Now in Research Goal.
 
-> Primary endpoint TP ≥ 60.8% binary; compare clinical / radiomics
-> / combined; need calibration for clinical use.
+> Help me draft research_goal.md. Primary endpoint TP ≥ 60.8%; compare
+> clinical-only vs radiomics-only vs combined; need calibration for clinical use.
 ```
 
-Fills `research_goal.md`: primary metric `val_auc` + bootstrap CI, baseline = L2 logistic, success criteria, required figures (ROC + calibration + comparison_bar).
+The agent fills:
+- Primary metric (e.g., `val_auc` + bootstrap CI)
+- Baseline (the simplest defensible model)
+- Success criteria (minimum / target / model ordering)
+- Required figures & tables
+- Risks (small N, label noise, leakage paths)
 
-### 3. Model Selection
+`/phase advance` when ready.
+
+### Phase 3 — Model Selection
+
+Goal: write `research/model_selection.md` with a candidate matrix, shortlist, and rejection log.
 
 ```
 > /lit search "small-sample radiomics + clinical fusion"
@@ -128,15 +193,17 @@ strongest small-N pattern.
 
 > Which radiomics encoders fit n=270?
 
-→ model-recommend skill on data/model_registry.yaml
-  - microsoft/rad-dino  — fine-tune ≥100; verified 2026-04-20
-  - google/medsiglip    — fine-tune ≥100; verified 2026-04-20
-  - google/medgemma-4b  — needs more data than encoder-only
+→ model-recommend skill consults data/model_registry.yaml:
+  - microsoft/rad-dino       — fine-tune ≥100 samples; verified 2026-04-20
+  - google/medsiglip-448     — fine-tune ≥100 samples; verified 2026-04-20
+  - google/medgemma-4b-pt    — needs more data than encoder-only models
 ```
 
-Fills `model_selection.md`. Rejects high-dim wavelet (overfitting risk at N=270).
+Fill `research/model_selection.md` and **register the baseline first** (this is enforced; no improvement claims without one).
 
-### 4. Fine Tuning
+### Phase 4 — Fine Tuning
+
+Goal: explore the shortlist within fixed bounds. The L1 autoresearch loop runs many iterations; each is git-committed.
 
 ```
 > /exp new baseline-clinical-l2
@@ -150,22 +217,36 @@ Fills `model_selection.md`. Rejects high-dim wavelet (overfitting risk at N=270)
 Best val_auc=0.661.
 
 > /exp new combined-linear-svm
-> /exp loop --metric val_auc
+> /exp loop --metric val_auc --budget 5min
 Best val_auc=0.700 → new current best.
 ```
 
-The L1 loop edits `train.py`, runs `python train.py > run.log 2>&1`, greps `val_auc:`, advances or resets git. Every attempt appends to `experiments/ledger.tsv`.
+For each iteration the experimenter subagent:
+1. Edits `train.py` with one change
+2. Runs `python train.py > run.log 2>&1` (no tee — output redirection only)
+3. Greps the metric line
+4. Advances or resets git based on whether it improved
+5. Appends to `experiments/ledger.tsv`
 
-### 5. Analysis Report
-
-The test set is **locked** by the `test_set_guard` hook during Selection/Tuning. Try to peek:
+The **test set is locked** during this phase. The hook will block any read of `data/splits/test/`.
 
 ```
 > Read data/splits/test/labels.csv
-✗ Blocked by test_set_guard. Test set locked during Fine Tuning phase.
+✗ Blocked: Test set is locked during "Fine Tuning" phase.
 ```
 
-Advance (which unlocks it for reporting):
+When candidates have settled: compare them on validation:
+
+```
+> /exp compare EXP001 EXP003
+EXP001 val_auc: 0.661 (CI 0.513–0.789)
+EXP003 val_auc: 0.700 (CI 0.565–0.814)
+DeLong (val): p=0.46 — trend toward improvement, not significant.
+```
+
+### Phase 5 — Analysis Report
+
+Advancing to Analysis **unlocks the test set** for the first and only time:
 
 ```
 > /phase advance
@@ -182,36 +263,51 @@ paired test (clinical vs combined): p=0.46.
 | Radiomics  | 0.637    | (0.495, 0.770) |
 | Combined   | 0.700    | (0.565, 0.814) |
 
-Combined point estimate is highest; DeLong p=0.46 means the report
-language is "trend toward improvement," not "significantly outperforms."
+Combined is highest by point estimate; DeLong p=0.46 → report language
+is "trend toward improvement," not "significantly outperforms."
+
+> /audit report
+critic verdict: PASS.
 
 > /report final
 Promoted figures to results/figures/, tables to results/tables/.
 Updated root README.md with current best.
 ```
 
-### What ends up on disk
+Done. Every metric traces to a specific commit. Every accept/reject is in `research/iteration_trace.md`. The test set was untouched until Analysis. The project is reproducible from `git clone` alone.
+
+---
+
+## Three-layer loop discipline
+
+ml-researcher applies different discipline at three time scales:
 
 ```
-gbm-tumor-purity/
-├── README.md, CLAUDE.md, .claude/
-├── respec/                       # methodology constitution
-├── research/{progress, data_understanding, research_goal,
-│            model_selection, fine_tuning,
-│            iteration_trace, analysis_report}.md
-├── data/{raw,derived,splits}/    # test split locked since init
-├── experiments/
-│   ├── ledger.tsv                # full audit trail of every iteration
-│   ├── EXP001_baseline-clinical-l2/
-│   ├── EXP002_radiomics-rbf-svm/
-│   ├── EXP003_combined-linear-svm/    ← current best
-│   └── EXP004_high-dim-wavelet/       (rejected, recorded)
-├── results/{figures,tables,reports}/
-├── papers/{shortlist.md, notes/}
-└── scripts/, .git/
+L3 · Lifecycle Loop      (days/weeks)
+     Data → Goal → Selection → Tuning → Report → Revision
+L2 · Experiment Loop     (hours)
+     Plan → Research → Sandbox → Submit → Monitor → Decide
+L1 · Iteration Loop      (minutes)
+     Edit → Run → Measure → Keep or Reset
 ```
 
-Reproducible from `git clone` alone. Every metric traces to a specific commit. Every accept/reject is in `iteration_trace.md`. Test set untouched until Analysis. That's the loop ml-researcher exists to make easy.
+The agent always knows which loop is active. See [`spec/01_overview.md`](spec/01_overview.md).
+
+---
+
+## Built-in components
+
+| Subagents | Role |
+|---|---|
+| **navigator** | Top-level dispatcher; advances L3 |
+| **literature** | Paper search, citation graph, dataset discovery |
+| **experimenter** | Runs the L1 edit-run-measure-keep loop |
+| **analyst** | Produces analysis reports, statistical comparisons |
+| **critic** | Methodology audit (no leakage, baseline present, locked test set) |
+
+Plus 16 skills (ml-domain, experiment, methodology), a 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
+
+---
 
 ## Influences
 
@@ -220,65 +316,29 @@ Reproducible from `git clone` alone. Every metric traces to a specific commit. E
 | [huggingface/ml-intern](https://github.com/huggingface/ml-intern) | ML-domain expertise as opinionated system prompt; pre-flight checklists; hardware sizing; OOM recovery |
 | [karpathy/autoresearch](https://github.com/karpathy/autoresearch) | Single-file edit + git-as-ledger + TSV experiment log + fixed-budget loop |
 
-## Built-in subagents
-
-| Agent | Role |
-|---|---|
-| **navigator** | Identifies the active loop layer; advances L3 |
-| **literature** | Paper search, citation graph, dataset discovery |
-| **experimenter** | Runs the L1 edit-run-measure-keep loop |
-| **analyst** | Produces analysis reports, statistical comparisons |
-| **critic** | Methodology audit (no leakage, baseline present, locked test set) |
-
-## Multi-runtime support
-
-```bash
-# Default: Claude Code (subscription billing)
-init.sh "topic"
-
-# Gen Code — installs as a first-class identity (Channel A persona slot),
-# not project memory. Sets .gen/settings.json: {"identity": "ml-researcher"}.
-init.sh "topic" --runtime gen
-
-# Codex (best-effort) — uses AGENTS.md project memory
-init.sh "topic" --runtime codex
-
-# Initialize in current directory (don't create new dir)
-init.sh "topic" --in-place
-
-# Pin to a specific ml-researcher version
-init.sh "topic" --ref v0.1.0
-```
-
-How the persona is delivered per runtime:
-
-| Runtime | Persona location | Channel |
-|---|---|---|
-| Claude Code | `CLAUDE.md` (project root) | system-reminder (project memory) |
-| Gen Code | `.gen/identities/ml-researcher.md` + `.gen/settings.json` | identity slot 0 (system prompt) |
-| Codex | `AGENTS.md` (project root) | system-reminder (project memory) |
-
-For Gen Code, the identity slot is the [first-class persona channel](https://github.com/genai-io/gen-code/blob/main/docs/system-prompt.md) — separate from project memory. ml-researcher's prompt **is** a persona (epistemic stance + methodology), so it slots in cleanly without polluting GEN.md.
+---
 
 ## Specification
 
-Full design is in [`spec/`](spec/):
+Full design in [`spec/`](spec/):
 
 - [`spec/01_overview.md`](spec/01_overview.md) — Philosophy and three-layer loop
 - [`spec/02_architecture.md`](spec/02_architecture.md) — Zero-install model; `init.sh` end-to-end
-- [`spec/03_project_structure.md`](spec/03_project_structure.md) — Research project layout
+- [`spec/03_project_structure.md`](spec/03_project_structure.md) — Project layout
 - [`spec/04_methodology.md`](spec/04_methodology.md) — Lifecycle, records, guardrails
 - [`spec/05_agents.md`](spec/05_agents.md), [`06_tools.md`](spec/06_tools.md), [`07_commands.md`](spec/07_commands.md), [`08_hooks.md`](spec/08_hooks.md)
 - [`spec/09_packaging.md`](spec/09_packaging.md) — Install model
 - [`spec/10_milestones.md`](spec/10_milestones.md) — v0.1 roadmap
 - [`spec/11_related_projects.md`](spec/11_related_projects.md) — Landscape survey
-- [`spec/12_knowledge_integration.md`](spec/12_knowledge_integration.md) — How ML domain expertise is embedded
-- [`spec/TODO.md`](spec/TODO.md) — Deferred work
+- [`spec/12_knowledge_integration.md`](spec/12_knowledge_integration.md) — How ML expertise is embedded
+- [`spec/TODO.md`](spec/TODO.md) — Backlog
 
-## Related Projects
+---
 
+## Related
+
+- [Gen Code](https://github.com/genai-io/gen-code) — Open-source AI agent CLI (default runtime)
 - [genai-io/spec](https://github.com/genai-io/spec) — GenAI Foundry spec
-- [Gen Code](https://github.com/genai-io/gen-code) — Open-source AI agent CLI
 
 ## License
 
