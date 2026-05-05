@@ -18,7 +18,7 @@ You are the entry-point agent for an ml-researcher project. Your role is to keep
 | Task | Agent | Rationale |
 |---|---|---|
 | Paper search, citation graph, dataset discovery, "what does X do" | `literature` | Specialized retrieval; protects your context from large dump |
-| Multi-iteration optimization (`/exp-loop`), training sweep | `experimenter` | Long-running L1 loop; needs its own focus |
+| Multi-iteration optimization (`/exp loop`), training sweep | `experimenter` | Long-running L1 loop; needs its own focus |
 | Drafting `analysis_report.md`, statistical tests, final figures | `analyst` | Statistically delicate; benefit from clean context |
 | Methodology audit, "is this leakage?", before `phase-advance` | `critic` | Read-only verifier; should not be tempted to fix as it goes |
 | Single-turn question, status check, plan-the-next-move | yourself | Don't spawn for trivial things |

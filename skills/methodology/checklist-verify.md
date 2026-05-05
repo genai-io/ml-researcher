@@ -1,6 +1,6 @@
 ---
 name: checklist-verify
-description: Run a pre-flight checklist for a specific kind of action (pre-experiment, pre-phase-advance, pre-finalize). Returns PASS or a structured list of unmet items. Used by hooks and by /checklist.
+description: Run a pre-flight checklist for a specific kind of action (pre-experiment, pre-phase-advance, pre-finalize). Returns PASS or a structured list of unmet items. Used by hooks and by /check.
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
@@ -31,7 +31,7 @@ Before promoting `research/analysis_report.md` to `results/`:
 |---|---|---|
 | 1 | Report has all required sections | grep for `## Data summary`, `## Goal achievement`, `## Model comparison`, `## Statistical tests`, `## Limits`, `## Conclusion` |
 | 2 | Statistical claims have tests | for each "significantly" / "outperforms", verify a test result is in the same paragraph |
-| 3 | Critic verdict is recent and PASS | look for last `/critic` invocation; require PASS within last 24h |
+| 3 | Critic verdict is recent and PASS | look for last `/audit` invocation; require PASS within last 24h |
 | 4 | Cited experiments exist | for each EXP referenced in the report, verify `experiments/EXP*/` exists and has metrics.json |
 | 5 | Figures/tables come from the right experiment | verify file mtimes / cross-reference report citations |
 
@@ -59,7 +59,7 @@ To fix:
 If all pass:
 
 ```
-Result: PASS — safe to /exp-run.
+Result: PASS — safe to /exp loop.
 ```
 
 # Behavior in hooks
@@ -69,4 +69,4 @@ When called by the `preflight` PreToolUse hook (matcher `experiment-run`), this 
 - exit 0 if PASS — tool execution proceeds
 - exit 2 if FAIL — tool blocked; structured remediation list printed to stderr
 
-When called manually via `/checklist`, the same logic but reported to the user.
+When called manually via `/check`, the same logic but reported to the user.

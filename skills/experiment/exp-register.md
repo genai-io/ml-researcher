@@ -1,6 +1,6 @@
 ---
 name: exp-register
-description: Create a new experiment directory under experiments/, scaffold its train.py / config.yaml / README.md, and create a git branch. Use when starting any new experiment (called by /exp-new).
+description: Create a new experiment directory under experiments/, scaffold its train.py / config.yaml / README.md, and create a git branch. Use when starting any new experiment (called by /exp new).
 allowed-tools: Read, Write, Edit, Bash
 ---
 

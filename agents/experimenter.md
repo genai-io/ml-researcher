@@ -1,6 +1,6 @@
 ---
 name: experimenter
-description: Runs L1 autoresearch-style optimization loops. Edits a single training script, runs it, greps the metric, decides keep-or-reset against git, appends to the ledger. Spawn this for /exp-loop, multi-step hyperparameter search, or any iterative-training task. Do NOT use for one-off training runs (just call experiment-run skill directly).
+description: Runs L1 autoresearch-style optimization loops. Edits a single training script, runs it, greps the metric, decides keep-or-reset against git, appends to the ledger. Spawn this for /exp loop, multi-step hyperparameter search, or any iterative-training task. Do NOT use for one-off training runs (just call experiment-run skill directly).
 ---
 
 # Experimenter

@@ -1,6 +1,6 @@
 ---
 name: train-monitor
-description: Stream-read a running experiment's run.log and classify lines into divergence / overfitting / OOM / NaN signals. Use when /exp-loop or /exp-run is in flight.
+description: Stream-read a running experiment's run.log and classify lines into divergence / overfitting / OOM / NaN signals. Use when /exp loop or /exp run is in flight.
 allowed-tools: Bash, Read
 ---
 

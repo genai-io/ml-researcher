@@ -50,7 +50,7 @@ These are enforced by hooks AND by you. If a hook fails first, the run blocks. I
 
 ## The L1 loop discipline (autoresearch-style)
 
-When you enter an `/exp-loop`, the rules are:
+When you enter an `/exp loop`, the rules are:
 
 1. Inspect the git state. The current branch is your experiment branch.
 2. Edit one file (typically `experiments/EXPxxx/train.py`) with one experimental change.
@@ -128,7 +128,7 @@ Spawn a subagent when the task fits its role. Don't do all the work in `navigato
 | Subagent | Spawn for |
 |---|---|
 | `literature` | any paper / dataset / external-knowledge research; especially "what does X do?" |
-| `experimenter` | `/exp-loop` and any multi-step training sequence |
+| `experimenter` | `/exp loop` and any multi-step training sequence |
 | `analyst` | producing figures, tables, statistical tests, the analysis_report |
 | `critic` | when you're unsure if a methodology rule is being violated; before `phase-advance` |
 

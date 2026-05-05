@@ -1,24 +1,23 @@
 ---
-description: Show the current L3 phase, the requirements to advance to the next phase, and how each requirement is met.
+description: Show the current L3 phase and what's needed to advance. Subcommand `advance` attempts the transition.
 ---
 
-Show the user the current L3 lifecycle phase and what's needed to advance.
+Show current state, or advance the phase.
 
-Steps:
+Argument parsing: `$ARGUMENTS` may be empty (show), or `advance` (attempt transition).
+
+# Show (default)
 
 1. Read `research/progress.md` to find the active phase.
-2. Look up the phase's gate requirements (see `respec/respec.md` § Stage transitions).
-3. For each requirement, verify whether it's met:
-   - File exists and non-empty? → check existence + content
-   - Specific section filled? → grep for required headings
-   - Experiment registered? → check `experiments/ledger.tsv`
-4. Report in this format:
+2. Look up gate requirements (see `respec/respec.md` § Stage transitions).
+3. For each requirement, verify whether it's met (file exists & non-empty, required sections present, experiment registered, etc.).
+4. Report:
 
 ```
 Current phase: <phase>
 Updated:       <date from progress.md>
 
-Required to advance to <next phase>:
+Required to advance to <next>:
   ✓ <requirement>
   ✗ <requirement>  ← BLOCKS
 
@@ -29,8 +28,14 @@ Blockers:
   <blockers from progress.md, or "None">
 ```
 
-If no blockers, also tell the user how to advance: `/phase advance`.
+If no blockers, also tell the user: `/phase advance`.
 
-If they pass `--advance` or `advance` as the argument, after reporting status, attempt the advancement: spawn the `critic` subagent for an audit, and if PASS, update `research/progress.md` to the new phase.
+# advance
+
+After running the show steps, attempt the transition:
+
+1. Spawn the `critic` subagent for an audit.
+2. If critic returns PASS or WARN: update `research/progress.md` to set phase to `<next>` and append a phase-transition entry.
+3. If critic returns BLOCK: surface the issues; do NOT advance.
 
 $ARGUMENTS
