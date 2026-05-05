@@ -18,7 +18,7 @@
 set -euo pipefail
 
 TOPIC=""
-RUNTIME="claude"
+RUNTIME="gen"
 IN_PLACE=0
 REF="${ML_RESEARCHER_REF:-main}"
 REPO="${ML_RESEARCHER_REPO:-https://github.com/genai-io/ml-researcher.git}"
@@ -29,7 +29,7 @@ usage() {
 Usage: init.sh "<topic>" [options]
 
 Options:
-  --runtime <name>    claude (default) | gen | codex
+  --runtime <name>    gen (default) | claude | codex
   --in-place          initialize current directory instead of creating a new one
   --ref <ref>         git ref to clone (commit, tag, or branch). Default: main
   --local <path>      use a local ml-researcher checkout instead of cloning
@@ -37,7 +37,7 @@ Options:
 
 Examples:
   init.sh "GBM tumor purity"
-  init.sh "Bird classification" --runtime gen
+  init.sh "Bird classification" --runtime claude
   init.sh "Sentiment analysis" --in-place
   init.sh "test" --ref v0.1.0
 EOF
@@ -103,11 +103,67 @@ cp -R "$SRC/template/." "$DEST/"
 
 # Place runtime config
 mkdir -p "$DEST/$CFG"
-for d in agents skills commands hooks; do
+for d in agents skills commands; do
   if [ -d "$SRC/$d" ]; then
     cp -R "$SRC/$d" "$DEST/$CFG/"
   fi
 done
+
+# Hooks: copy scripts to <CFG>/hooks/, merge settings into <CFG>/settings.json.
+# The hook settings template uses __CFG__ placeholder for the config dir.
+if [ -d "$SRC/hooks" ]; then
+  mkdir -p "$DEST/$CFG/hooks"
+  for hf in "$SRC"/hooks/*.sh; do
+    [ -f "$hf" ] && cp "$hf" "$DEST/$CFG/hooks/"
+  done
+  chmod +x "$DEST/$CFG/hooks"/*.sh 2>/dev/null || true
+
+  if [ -f "$SRC/hooks/settings.json" ]; then
+    HOOK_SETTINGS_SRC="$SRC/hooks/settings.json"
+    SETTINGS="$DEST/$CFG/settings.json"
+    if ! python3 - "$HOOK_SETTINGS_SRC" "$SETTINGS" "$CFG" <<'PY'
+import json, sys
+
+src_path, dest_path, cfg = sys.argv[1], sys.argv[2], sys.argv[3]
+
+with open(src_path) as f:
+    hook_settings = json.load(f)
+
+# Substitute __CFG__ placeholder anywhere it appears in strings.
+def sub(obj):
+    if isinstance(obj, dict):
+        return {k: sub(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [sub(x) for x in obj]
+    if isinstance(obj, str):
+        return obj.replace('__CFG__', cfg)
+    return obj
+hook_settings = sub(hook_settings)
+
+# Merge with any existing settings (e.g. identity activation written earlier).
+try:
+    with open(dest_path) as f:
+        existing = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    existing = {}
+
+# Merge top-level keys; hooks/mlr from template override; preserve identity etc.
+for key in ('hooks', 'mlr'):
+    if key in hook_settings:
+        existing[key] = hook_settings[key]
+
+# Drop the bookkeeping comment from output.
+existing.pop('_comment', None)
+
+with open(dest_path, 'w') as f:
+    json.dump(existing, f, indent=2)
+PY
+    then
+      echo "warning: python3 unavailable; falling back to sed substitution (existing settings will be overwritten)" >&2
+      sed "s|__CFG__|$CFG|g" "$HOOK_SETTINGS_SRC" > "$SETTINGS"
+    fi
+  fi
+fi
 
 # System prompt placement.
 #
