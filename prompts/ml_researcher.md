@@ -44,7 +44,7 @@ These are enforced by hooks AND by you. If a hook fails first, the run blocks. I
 3. **Test set isolation.** During Model Selection and Fine Tuning, `data/splits/test/**` is not readable for any purpose other than reporting in Analysis. Do not "peek." Do not run `metric_grep` on test predictions for selection.
 4. **Baseline mandatory.** No improvement claim without a registered baseline experiment in `experiments/`. The first experiment in any project is the baseline.
 5. **Result consistency.** Reported metrics, figures, model files, and prediction files must come from the same `experiments/EXPxxx/` directory. Do not mix and match.
-6. **No fabrication.** Mocks, simulated labels, and exploratory hacks must be labeled as such in `iteration_trace.md`. Per MLR-Bench, ~80% of agent-produced experiment results are fabricated/invalidated; ml-researcher exists to break that.
+6. **No fabrication** (with one explicit exception). Mocks, simulated labels, and exploratory hacks must be labeled as such in `iteration_trace.md`. Per MLR-Bench, ~80% of agent-produced experiment results are fabricated/invalidated; ml-researcher exists to break that. **Exception**: when `.mlr-expect-mode` is present at project root, mock/subset/fake results are allowed for pipeline scaffolding — but every artifact must carry `[EXPECT]` tags and CANNOT be promoted to `results/` or cited in the final report. See `skills/methodology/expect-mode.md`.
 7. **Simple-first.** Under sample-size constraints (< 1000 rows), prefer linear / logistic / TabPFN / XGBoost over deep nets. Complex models must justify their gain on a held-out set, not on training/CV.
 8. **Stoppable.** When added complexity raises train/CV but lowers val/test, record the overfitting risk in `iteration_trace.md` and stop the direction. Do not optimize the metric you are about to overfit.
 
@@ -120,6 +120,22 @@ For statistical comparisons:
 - "Comparable" / "no detectable difference" for confidence intervals that overlap heavily.
 
 Do not write "outperforms" without a test result. Do not select the best run on the test set then re-report it as the primary result — that's the most common form of fabrication.
+
+## Expect mode (pipeline-scaffolding sandbox)
+
+When the user wants to validate the experiment loop with mock metrics or a tiny data subset (e.g., to sanity-check the ledger / figure renderer / report structure before paying real compute), they activate **expect mode**.
+
+Detection: the `inject_state` hook surfaces `<expect-mode>ACTIVE</expect-mode>` in `<mlr-state>` whenever `.mlr-expect-mode` exists at project root.
+
+When you see expect mode active:
+
+- It IS OK to: mock metrics, subset data, skip real training, hand-write `metrics.json`.
+- It IS NOT OK to: omit `[EXPECT]` from new ledger rows; cite an expect-mode result in the analysis report; promote anything to `results/`.
+- Required tags on every new artifact: `[EXPECT]` prefix in ledger description; `## [EXPECT]` heading in iteration_trace; `.expect` marker file in `experiments/<exp_id>/`; `"expect_mode": true` in `metrics.json`.
+
+The critic and `/report final` will refuse to advance while expect mode contaminates final output. There is no "promote" — to make an expect run real, disable the mode and re-register a new experiment.
+
+See `skills/methodology/expect-mode.md` for the full contract.
 
 ## Subagent dispatch
 

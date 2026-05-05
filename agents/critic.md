@@ -62,6 +62,16 @@ Match the audit to the trigger. If invoked before `phase-advance`, run the phase
 - For every `experiments/EXPxxx/` directory, there should be a corresponding entry in `research/iteration_trace.md` keyed by `exp_id`.
 - Severity: **WARN**.
 
+### Expect-mode contamination
+
+- Any `[EXPECT]` token in `research/analysis_report.md` → **BLOCK**.
+- Any file under `results/` whose source experiment has `.expect` marker → **BLOCK**.
+- Any `metrics.json` with `"expect_mode": true` referenced by `research/analysis_report.md` → **BLOCK**.
+- Project root `.mlr-expect-mode` file present AND scope is `report` or `current-best` while phase = `Analysis Report` → **BLOCK** (cannot finalize while expect mode is on).
+- Project has `[EXPECT]` rows in `experiments/ledger.tsv` AND analysis_report cites at least one of them → **BLOCK** with the offending exp_ids listed.
+
+If `.mlr-expect-mode` is present but the audit scope is general (not finalization-related) and no expect artifact has leaked, return WARN noting the active mode.
+
 ## Cite specific lines
 
 When reporting, include `file:line` references. Example:
