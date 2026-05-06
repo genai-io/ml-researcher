@@ -63,7 +63,7 @@ Embedded into the binary as `internal/hooks/defaults.json` and merged into the p
 }
 ```
 
-`mlr-hook preflight` runs `checklist_verify --kind pre_experiment` and blocks if any check fails.
+`mlr-hook preflight` runs `checklist_verify --kind pre_experiment` and blocks if any check fails. The mechanical rules (baseline registered, `progress.md` present, no test-split refs in the active experiment dir) live in `<CFG>/hooks/checks.sh` — the preflight hook, the phase-gate hook, and the `checklist-verify` skill all delegate to that single script.
 
 ### 4. Auto-append iteration_trace after experiment_run
 
@@ -96,7 +96,7 @@ Embedded into the binary as `internal/hooks/defaults.json` and merged into the p
 }
 ```
 
-`mlr-hook phase-gate` runs the per-stage requirements check (see [`04_methodology.md`](04_methodology.md)). Returns the missing-requirements list as the block reason.
+`mlr-hook phase-gate` runs the per-stage requirements check (see [`04_methodology.md`](04_methodology.md)) by delegating to `<CFG>/hooks/checks.sh`. Returns the missing-requirements list as the block reason.
 
 ### 6. Expect-mode banner
 
@@ -163,8 +163,9 @@ mlr-hook test-set-guard
 mlr-hook preflight
 mlr-hook trace-append
 mlr-hook phase-gate
-mlr-hook inject-state
+mlr-hook expect-mode-banner
 mlr-hook stop-resume-check
+mlr-hook checks <name>      # shared mechanical-checks library used by the above
 ```
 
 Source: `cmd/mlr-hook/main.go`.

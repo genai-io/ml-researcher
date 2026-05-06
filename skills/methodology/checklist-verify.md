@@ -17,7 +17,7 @@ Before any `experiment-run` invocation:
 | 3 | Output destination set | look in `experiments/EXPxxx/config.yaml` for `output_dir`, `save_strategy`, `push_to_hub`, etc. |
 | 4 | Timeout justified | the experiment-run skill's budget is ≥ 2 × estimated runtime |
 | 5 | Run name follows convention | `<task>_<model>_lr<lr>_bs<bs>_<short-tag>` in the run name or experiment name |
-| 6 | Baseline exists if claiming improvement | `experiments/ledger.tsv` has a row with `description` containing "baseline" and `status=keep` |
+| 6 | Baseline exists if claiming improvement | `bash <CFG>/hooks/checks.sh baseline-kept` (rule: row in `experiments/ledger.tsv` with `description` containing "baseline" AND `status=keep`) |
 
 ## kind=pre-phase-advance
 
@@ -70,3 +70,7 @@ When called by the `preflight` PreToolUse hook (matcher `experiment-run`), this 
 - exit 2 if FAIL — tool blocked; structured remediation list printed to stderr
 
 When called manually via `/check`, the same logic but reported to the user.
+
+# Source of truth for mechanical rules
+
+The mechanical checks above (file existence, ledger row matching, current-experiment-dir grep) are also encoded in `<CFG>/hooks/checks.sh`. Both the `preflight` and `phase_gate` hooks shell out to that script. When a rule changes, edit `checks.sh` and update the corresponding row in this skill — the script is authoritative for what passes/fails; this skill explains *why* and *what to do about it*.

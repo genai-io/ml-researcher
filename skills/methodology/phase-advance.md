@@ -20,7 +20,7 @@ To advance FROM the listed phase, these must be present:
 
 ## From "Research Goal" → "Model Selection"
 - `research/research_goal.md` exists, non-empty, with: Primary Research Question, Endpoints (≥1), Metrics (primary metric named), Success Criteria, Baseline declared.
-- At least one baseline experiment exists in `experiments/ledger.tsv` (status ≠ `crash`).
+- A registered baseline exists (`bash <CFG>/hooks/checks.sh baseline-kept` returns 0 — i.e., a row in `experiments/ledger.tsv` whose description contains "baseline" with `status=keep`). The same rule is applied by the `preflight` hook before any experiment run.
 
 ## From "Model Selection" → "Fine Tuning"
 - `research/model_selection.md` exists, non-empty, with a shortlist of ≥1 model and ≥1 rejection.

@@ -2,37 +2,35 @@
 # Run the pre-flight checklist before exp-run.
 # Currently a soft check: emits warnings for missing items but does not block.
 # A future stricter version would exit 2 on hard violations.
-set -euo pipefail
+#
+# All mechanical rules live in hooks/checks.sh — this script is just a
+# sequencer that decides which checks apply for a pre-experiment context.
+set -uo pipefail
 
 cat > /dev/null
 
-WARN=0
+HOOKS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKS="$HOOKS_DIR/checks.sh"
 
-# 1. Baseline exists if the current branch isn't itself a baseline
+WARN=0
+warn_if_fail() {
+  # Run a check; if it fails, print its stderr as "WARN: ..." and bump counter.
+  local name="$1" reason
+  reason=$(bash "$CHECKS" "$name" 2>&1 >/dev/null) || {
+    echo "WARN: $reason" >&2
+    WARN=$((WARN+1))
+  }
+}
+
+# Only require a baseline when we're on a non-baseline experiment branch
+# (a baseline experiment is itself the thing being registered).
 BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 if [[ "$BRANCH" =~ ^mlr/exp/EXP[0-9]+_ ]] && [[ ! "$BRANCH" =~ baseline ]]; then
-  if [ -f experiments/ledger.tsv ]; then
-    if ! grep -i baseline experiments/ledger.tsv | grep -q $'\tkeep\t' 2>/dev/null; then
-      echo "WARN: No baseline experiment with status=keep found in experiments/ledger.tsv. Improvement claims need a baseline." >&2
-      WARN=$((WARN+1))
-    fi
-  fi
+  warn_if_fail baseline-kept
 fi
 
-# 2. progress.md exists
-if [ ! -f research/progress.md ]; then
-  echo "WARN: research/progress.md is missing. The agent should know the current phase before running experiments." >&2
-  WARN=$((WARN+1))
-fi
-
-# 3. test set protection — heuristic check that no test references appear in the experiment's planned files
-EXP_DIR=$(echo "$BRANCH" | sed 's|^mlr/exp/||')
-if [ -n "$EXP_DIR" ] && [ -d "experiments/$EXP_DIR" ]; then
-  if grep -rn "data/splits/test" "experiments/$EXP_DIR" 2>/dev/null; then
-    echo "WARN: experiments/$EXP_DIR references data/splits/test/. Selection/Tuning phases must not read test data." >&2
-    WARN=$((WARN+1))
-  fi
-fi
+warn_if_fail progress-present
+warn_if_fail no-test-refs-in-current-exp
 
 if [ "$WARN" -gt 0 ]; then
   echo "" >&2
