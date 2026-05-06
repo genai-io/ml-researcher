@@ -271,7 +271,7 @@ critic verdict: PASS.
 
 > /report final
 Promoted figures to results/figures/, tables to results/tables/.
-Updated root README.md with current best.
+Updated results/README.md with the finalized summary.
 ```
 
 Done. Every metric traces to a specific commit. Every accept/reject is in `research/iteration_trace.md`. The test set was untouched until Analysis. The project is reproducible from `git clone` alone.

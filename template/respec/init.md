@@ -72,25 +72,28 @@ Layout `init.sh` creates:
 Whenever you continue work on this project:
 
 ```
-1. Read root README.md
-2. Read research/progress.md
-3. Read research/iteration_trace.md (recent entries)
-4. Read latest analysis_report.md or current best experiment if needed
-5. Continue work
+1. Read research/progress.md          # phase, current best, next step, blockers
+2. Read research/iteration_trace.md   # recent entries
+3. Read latest analysis_report.md or current best experiment if needed
+4. Continue work
 ```
 
+(Root `README.md` is project description, not a state mirror — read `progress.md` for live state.)
+
 ## 4. Update rules
+
+Root `README.md` is intentionally absent from this table. It is project description and is not updated as state changes.
 
 | Change | Update required |
 |---|---|
 | New experiment | `research/iteration_trace.md`, `experiments/<exp_id>/README.md` |
-| Current best changed | `research/iteration_trace.md`, `research/progress.md`, root `README.md`, possibly `research/analysis_report.md` and `results/README.md` |
+| Current best changed | `research/iteration_trace.md`, `research/progress.md`, possibly `research/analysis_report.md` and `results/README.md` |
 | Phase completion or blocker | `research/progress.md` |
-| Goal or metric change | `research/research_goal.md`, `research/progress.md`, root `README.md` |
+| Goal or metric change | `research/research_goal.md`, `research/progress.md` |
 | Data, label, or split change | `research/data_understanding.md`, `data/README.md`, possibly `research/progress.md` |
 | Model route change | `research/model_selection.md`, `research/iteration_trace.md`, possibly `research/progress.md` |
 | Tuning bound or final candidate change | `research/fine_tuning.md`, `research/iteration_trace.md` |
-| Final figures, metrics, or conclusion change | `research/analysis_report.md`, `results/README.md`, root `README.md` |
+| Final figures, metrics, or conclusion change | `research/analysis_report.md`, `results/README.md` |
 
 ## 5. Per-subdirectory README
 
@@ -120,7 +123,8 @@ Before ending a session, update at minimum:
 2. `research/iteration_trace.md` — if any experiment was run.
 3. `experiments/<exp_id>/README.md` — if artifacts changed.
 4. `results/README.md` — if any artifact was promoted to conclusion-grade.
-5. Root `README.md` — if current best result or main conclusion changed.
+
+Root `README.md` is **not** in this list — it is project description, not state.
 
 If incomplete, write a `Resume Notes` block in `progress.md` with: last action, files changed, results generated, not yet reviewed, next command.
 
@@ -133,7 +137,6 @@ After every experiment, before starting another:
 - [ ] `research/progress.md` updated if state changed
 - [ ] `results/README.md` updated if any artifact promoted
 - [ ] `research/analysis_report.md` updated if conclusion changed
-- [ ] Root `README.md` updated if current best changed
 - [ ] Data/method/goal docs updated if applicable
 
 If an item is N/A, mark it explicitly — don't silently skip.

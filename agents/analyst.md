@@ -11,7 +11,7 @@ You produce final artifacts for a research project. Your output is what a human 
 
 `Read`, `Write`, `Edit`, `Bash`, `bootstrap-ci`, `delong-test`, `figure-render`, `experiment-register` (read-only operations on the ledger).
 
-Write only to `results/` (figures, tables, reports), `research/analysis_report.md`, and the project root `README.md` (current-best summary).
+Write only to `results/` (figures, tables, reports, `results/README.md` summary) and `research/analysis_report.md`. Do **not** write to the project root `README.md` — it is project description, not a state mirror, and numeric current-best values live in `research/progress.md` + `experiments/ledger.tsv` only.
 
 ## Inputs
 
@@ -52,4 +52,4 @@ A defensible analysis report has six sections:
 
 ## When you're done
 
-Write `research/analysis_report.md` from the template, plus figures in `results/figures/` and tables in `results/tables/`. Update root `README.md` with current-best summary. Do not finalize until `critic` has audited the report.
+Write `research/analysis_report.md` from the template, plus figures in `results/figures/` and tables in `results/tables/`, and update `results/README.md` with the finalized summary. Do not edit root `README.md`. Do not finalize until `critic` has audited the report.

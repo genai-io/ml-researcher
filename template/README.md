@@ -3,13 +3,11 @@
 Last updated: {{DATE}}
 ml-researcher: {{ML_VERSION}}
 
-This is the project root. Update this README every time the research plan, current best result, or main conclusion changes.
+This is the project root. It is project description — what this project investigates, where to find things, how to run it. **Live state lives in [`research/progress.md`](research/progress.md)** (current phase, current best, blockers, next step). Don't mirror that state here — the README would rot silently.
 
-## Current state
+## What this is
 
-This project investigates **{{TOPIC}}**. The methodology and templates live in `respec/`; current research records live in `research/`; experiment artifacts in `experiments/`; final figures and tables in `results/`.
-
-Current phase: **Data Understanding**.
+This project investigates **{{TOPIC}}**. The methodology and templates live in `respec/`; current research records live in `research/`; experiment artifacts in `experiments/`; final figures and tables in `results/`. For the live phase, current best, and blockers, read [`research/progress.md`](research/progress.md).
 
 ## Navigation
 

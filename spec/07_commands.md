@@ -82,7 +82,7 @@ Spawn `analyst` subagent to write `research/analysis_report.md` from `experiment
 
 #### `/report final`
 
-Promote selected artifacts to `results/figures/`, `results/tables/`, `results/reports/final.md`. Update root `README.md` with current best. Auto-spawns `critic` for consistency check.
+Promote selected artifacts to `results/figures/`, `results/tables/`, `results/reports/final.md`. Update `results/README.md` with the finalized summary (root `README.md` is project description, not a state mirror — leave it alone). Auto-spawns `critic` for consistency check.
 
 ### `/check`
 

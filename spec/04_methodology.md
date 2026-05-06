@@ -110,6 +110,7 @@ Before ending a work session, the agent must update at minimum:
 2. `research/iteration_trace.md` — if any experiment was run.
 3. `experiments/EXPxxx/README.md` — if artifacts changed.
 4. `results/README.md` — if any artifact was promoted to conclusion-grade.
-5. Root `README.md` — if the current best result or main conclusion changed.
+
+Root `README.md` is intentionally **not** in this list. It is project description — what the project is, how to run, where to find things — and it must not contain numeric current-best values that would shadow `progress.md` / `ledger.tsv` / `metrics.json`. Treat it as a static landing page; readers who want live state follow its link to `research/progress.md`.
 
 If incomplete, write a `Resume Notes` block in `progress.md` with: last action, files changed, results generated, not yet reviewed, next command.

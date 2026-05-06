@@ -30,7 +30,7 @@ Argument parsing: `$ARGUMENTS` is `draft` (default) or `final`.
    - Copy tables into `results/tables/`.
    - Write `results/reports/final.md` (a short reader-facing version of analysis_report).
 
-3. Update root `README.md`'s "Current state" / "Best result" sections.
+3. Update `results/README.md` with the finalized summary (best model, headline metric, link to `research/analysis_report.md`). Do **not** edit root `README.md` — it is project description, not a state mirror; current-best numbers live only in `research/progress.md` and `experiments/ledger.tsv`.
 
 4. Spawn `critic` with `scope=current-best` for a final consistency check.
 
