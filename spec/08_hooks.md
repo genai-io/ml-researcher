@@ -7,7 +7,7 @@ Hooks are gen-code's event-driven extensibility mechanism. ml-researcher ships a
 | Event | Purpose |
 |---|---|
 | `SessionStart` | Read `progress.md`; warn if stale (> 7 days untouched) |
-| `UserPromptSubmit` | Inject current phase + current best into context (small XML block) |
+| `UserPromptSubmit` | Surface the expect-mode banner when `.mlr-expect-mode` exists (otherwise no-op — phase/best/next-step live in `progress.md` and are read on demand) |
 | `PreToolUse` | Methodology guardrails: protect raw data, locked test set, baseline requirement |
 | `PostToolUse` | Audit trail: append to `iteration_trace.md` after experiments |
 | `Stop` | Stop-and-resume rule: ensure `progress.md` is updated; prompt if not |
@@ -98,32 +98,29 @@ Embedded into the binary as `internal/hooks/defaults.json` and merged into the p
 
 `mlr-hook phase-gate` runs the per-stage requirements check (see [`04_methodology.md`](04_methodology.md)). Returns the missing-requirements list as the block reason.
 
-### 6. Inject phase context into prompts
+### 6. Expect-mode banner
 
 ```json
 {
   "UserPromptSubmit": [{
     "hooks": [{
       "type": "command",
-      "command": "mlr-hook inject-state",
+      "command": "bash <CFG>/hooks/expect_mode_banner.sh",
       "async": false
     }]
   }]
 }
 ```
 
-`mlr-hook inject-state` produces a small XML block:
+When `.mlr-expect-mode` exists at project root, the hook injects:
 
 ```xml
-<mlr-state>
-  <phase>Model Selection</phase>
-  <current-best exp-id="EXP004" metric="val_auc" value="0.715"/>
-  <next-step>Run radiomics feature extraction with bin width 25</next-step>
-  <blockers>None</blockers>
-</mlr-state>
+<expect-mode rows="3">ACTIVE — mock/subset/fake results allowed; promotion to results/ blocked. See skills/methodology/expect-mode.md.</expect-mode>
 ```
 
-Injected as `additionalContext` so the agent always has fresh state.
+`rows` counts `[EXPECT]` entries already in `experiments/ledger.tsv`. When the marker is absent, the hook exits silently — nothing is injected.
+
+**Why narrow scope.** An earlier version of this hook also injected `<phase>`, `<current-best>`, and `<next-step>` extracted from `research/progress.md`. That was redundant: those facts live in `progress.md`, and the agent can read it whenever it actually needs them. Maintaining a parallel injected copy violates the single-source-of-truth principle and risks drift if the parsing regexes don't match the file format. The expect-mode flag is different — it's a hidden marker file that the agent would not otherwise notice, and it flips every methodology rule (mocks allowed, promotion blocked), so a banner on every prompt is justified.
 
 ### 7. Stop-and-resume reminder
 

@@ -44,4 +44,4 @@ Update this file when:
 - A goal revision happens
 - The session ends (write Resume notes if you can't fully update)
 
-The `inject_state.sh` hook reads this file at every prompt to surface the active state to the agent — keep it accurate.
+This file is the single source of truth for project state — the agent reads it on demand whenever phase, current best, or next step is needed. Keep it accurate.

@@ -45,7 +45,7 @@ rm .mlr-expect-mode
 
 The slash command `/expect on|off|status` wraps these.
 
-The `inject_state` hook prepends a `<expect-mode>` banner to every user prompt while active, so the agent always knows.
+The `expect_mode_banner` hook prepends a `<expect-mode>` banner to every user prompt while active, so the agent always knows. When the marker is absent the hook is a no-op (no shadow state injection).
 
 # Promotion path (no magic)
 

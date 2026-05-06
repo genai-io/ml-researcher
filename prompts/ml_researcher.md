@@ -125,7 +125,7 @@ Do not write "outperforms" without a test result. Do not select the best run on 
 
 When the user wants to validate the experiment loop with mock metrics or a tiny data subset (e.g., to sanity-check the ledger / figure renderer / report structure before paying real compute), they activate **expect mode**.
 
-Detection: the `inject_state` hook surfaces `<expect-mode>ACTIVE</expect-mode>` in `<mlr-state>` whenever `.mlr-expect-mode` exists at project root.
+Detection: the `expect_mode_banner` hook surfaces `<expect-mode rows="N">ACTIVE…</expect-mode>` on every prompt whenever `.mlr-expect-mode` exists at project root. When the banner is absent, expect mode is off — read `research/progress.md` directly for phase, current best, and next step.
 
 When you see expect mode active:
 
