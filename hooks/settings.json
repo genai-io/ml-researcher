@@ -1,5 +1,5 @@
 {
-  "_comment": "Methodology hooks for ml-researcher. Merged into <CFG>/settings.json by init.sh; __CFG__ is substituted with the actual config dir (.claude / .gen / .codex). Project-defined hooks take precedence — to disable a default, list its name in mlr.disabledHooks.",
+  "_comment": "Methodology hooks for ml-researcher. Merged into <CFG>/settings.json by init.sh; __CFG__ is substituted with the actual config dir (.claude / .gen / .codex). To disable a default after init, remove (or comment out) its entry from the merged <CFG>/settings.json directly.",
   "hooks": {
     "PreToolUse": [
       {
@@ -77,8 +77,5 @@
         ]
       }
     ]
-  },
-  "mlr": {
-    "disabledHooks": []
   }
 }
