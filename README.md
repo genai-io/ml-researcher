@@ -320,18 +320,7 @@ Plus 16 skills (ml-domain, experiment, methodology), a 18-entry model registry, 
 
 ## Specification
 
-Full design in [`spec/`](spec/):
-
-- [`spec/01_overview.md`](spec/01_overview.md) — Philosophy and three-layer loop
-- [`spec/02_architecture.md`](spec/02_architecture.md) — Zero-install model; `init.sh` end-to-end
-- [`spec/03_project_structure.md`](spec/03_project_structure.md) — Project layout
-- [`spec/04_methodology.md`](spec/04_methodology.md) — Lifecycle, records, guardrails
-- [`spec/05_agents.md`](spec/05_agents.md), [`06_tools.md`](spec/06_tools.md), [`07_commands.md`](spec/07_commands.md), [`08_hooks.md`](spec/08_hooks.md)
-- [`spec/09_packaging.md`](spec/09_packaging.md) — Install model
-- [`spec/10_milestones.md`](spec/10_milestones.md) — v0.1 roadmap
-- [`spec/11_related_projects.md`](spec/11_related_projects.md) — Landscape survey
-- [`spec/12_knowledge_integration.md`](spec/12_knowledge_integration.md) — How ML expertise is embedded
-- [`spec/TODO.md`](spec/TODO.md) — Backlog
+Full design lives in [`spec/`](spec/) — see [`spec/README.md`](spec/README.md) for the reading order, locked v0.1 decisions, and the influence map.
 
 ---
 
