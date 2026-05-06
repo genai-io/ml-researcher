@@ -32,6 +32,14 @@ Currently, `init.sh --in-place` overwrites methodology files; it does not select
 
 **Trigger to revisit**: a researcher with a long-lived project asks how to take advantage of new ml-researcher features without re-init-ing.
 
+## Fail-closed phase parsing in test_set_guard
+
+`hooks/test_set_guard.sh` extracts the active phase from `research/progress.md` with a regex that requires a list-marker prefix (`- Phase:` or `* Phase:`). If a future edit to `progress.md` drops the marker — or a different agent writes the phase in a different format — the regex returns empty, `$PHASE` is empty, and the script falls through to `exit 0` (allow). The test-set lock silently fails open. This is the exact failure mode MLR-Bench cites as the leading source of fabricated results: a guardrail that looks installed but doesn't fire. Both `test_set_guard.sh` and `expect_mode_banner.sh` have similar progress.md-parsing brittleness, but `test_set_guard` is the dangerous one because it gates a methodology rule.
+
+**Fix direction**: when phase parsing fails, default to fail-closed for guards that protect locked data (block with a clear "couldn't determine phase — refusing to read locked split" message). For non-guard hooks (banner, nudge), fail-open is fine. Alternative: parse `progress.md` via a single shared helper that fail-loud's on parse failure, so the brittleness lives in one place.
+
+**Trigger to revisit**: any audit finds a `progress.md` format that the guard couldn't parse; OR before the v0.2 release; OR if a project's progress.md schema is changed.
+
 ## Sysbox-style sandbox isolation
 
 Per [`11_related_projects.md`](11_related_projects.md), MLE-bench's "dummy verifier proves it cannot read holdout labels" pattern is the strongest anti-fabrication guarantee in the landscape. Adding a sysbox (or rootless container) wrapper around `experiment_run` would harden the test-set firewall.
