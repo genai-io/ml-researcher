@@ -19,12 +19,11 @@ To advance FROM the listed phase, these must be present:
 - `data/splits/` has at least one of `train/`, `val/`, `test/` populated (or a manifest CSV declaring them).
 
 ## From "Research Goal" → "Model Selection"
-- `research/research_goal.md` exists, non-empty, with: Primary Research Question, Endpoints (≥1), Metrics (primary metric named), Success Criteria, Baseline declared.
-- A registered baseline exists (`bash <CFG>/hooks/checks.sh baseline-kept` returns 0 — i.e., a row in `experiments/ledger.tsv` whose description contains "baseline" with `status=keep`). The same rule is applied by the `preflight` hook before any experiment run.
+- `research/research_goal.md` exists, non-empty, with: Primary Research Question, Endpoints (≥1), Metrics (primary metric named), Success Criteria, Baseline declared (textual — "which model is fair to compare against and why"; the baseline experiment is registered and run *during* Model Selection, not before).
 
 ## From "Model Selection" → "Fine Tuning"
 - `research/model_selection.md` exists, non-empty, with a shortlist of ≥1 model and ≥1 rejection.
-- `experiments/ledger.tsv` has rows for each shortlisted model with status=`keep`.
+- The baseline experiment is registered and kept: `bash <CFG>/hooks/checks.sh baseline-kept` returns 0 — i.e., a row in `experiments/ledger.tsv` whose description contains "baseline" with `status=keep`. The same rule is applied by the `preflight` hook before any subsequent experiment run, so improvement claims always have a comparator. Non-baseline shortlisted candidates are *registered* at the start of Fine Tuning via `/exp new` — they don't need kept runs at this gate.
 
 ## From "Fine Tuning" → "Analysis Report"
 - `research/fine_tuning.md` exists, non-empty, with parameter ranges per shortlisted model.

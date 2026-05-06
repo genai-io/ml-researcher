@@ -199,11 +199,7 @@ strongest small-N pattern.
   - google/medgemma-4b-pt    — needs more data than encoder-only models
 ```
 
-Fill `research/model_selection.md` and **register the baseline first** (this is enforced; no improvement claims without one).
-
-### Phase 4 — Fine Tuning
-
-Goal: explore the shortlist within fixed bounds. The L1 autoresearch loop runs many iterations; each is git-committed.
+Fill `research/model_selection.md`, then **register and run the baseline** before advancing — `/phase advance` to Fine Tuning is gated on `baseline-kept` (no improvement claims without a comparator):
 
 ```
 > /exp new baseline-clinical-l2
@@ -215,8 +211,18 @@ Goal: explore the shortlist within fixed bounds. The L1 autoresearch loop runs m
 [EXP001] iter 3: C=10   → 0.643 discard (git reset)
 ...
 Best val_auc=0.661.
+```
 
+`/phase advance` now passes — baseline is in the ledger with `status=keep`.
+
+### Phase 4 — Fine Tuning
+
+Goal: explore the rest of the shortlist within fixed bounds. The L1 autoresearch loop runs many iterations; each is git-committed.
+
+```
 > /exp new combined-linear-svm
+✓ EXP002 registered, branch mlr/exp/EXP002_combined-linear-svm
+
 > /exp loop --metric val_auc --budget 5min
 Best val_auc=0.700 → new current best.
 ```

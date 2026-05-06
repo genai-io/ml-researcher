@@ -2,13 +2,23 @@
 
 Compare data scenarios × model families laterally. Output is a shortlist of candidates entering Fine Tuning, plus a rejection log.
 
+## Literature consulted
+
+Every candidate in the matrix below must trace to at least one of: a paper from the literature shortlist, a curated entry in `data/model_registry.yaml`, or an explicit "domain default" reasoning step. The point is to make the audit trail explicit — the critic should be able to ask "why this model?" and find an answer in this section, not in chat history.
+
+| Source | Citation / registry id | Used for which candidate(s) | Relevance |
+|---|---|---|---|
+| `<paper / repo / registry>` | `<arxiv id / hf id / file>` | `<model name>` | `<one-line why this is a relevant precedent>` |
+
+Run `/lit search "<query>"` (which delegates to the `literature` subagent) and `model-recommend` (which queries `data/model_registry.yaml`) before populating this table and the matrix below. If a candidate has no precedent of any kind, justify why it deserves the slot anyway in the matrix's "Reason" column.
+
 ## Candidate matrix
 
 | Scenario | Model family | Status | Reason |
 |---|---|---|---|
 | `<scenario>` | `<family>` | `<shortlisted/rejected/postponed>` | `<one-line reason>` |
 
-Use the `model-recommend` skill (queries `data/model_registry.yaml`) before populating this matrix. For domain-specific guidance see `skills/ml/<domain>.md`.
+For domain-specific guidance see `skills/ml/<domain>.md`. Each row's "Reason" should reference one or more entries in the *Literature consulted* table above.
 
 ## Shortlist (entering Fine Tuning)
 

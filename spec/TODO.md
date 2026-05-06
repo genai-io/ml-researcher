@@ -40,6 +40,17 @@ Currently, `init.sh --in-place` overwrites methodology files; it does not select
 
 **Trigger to revisit**: any audit finds a `progress.md` format that the guard couldn't parse; OR before the v0.2 release; OR if a project's progress.md schema is changed.
 
+## Goal Revision vs test-set contamination
+
+The Goal Revision loop (Analysis Report → revised Research Goal → repeat necessary stages) is currently underspecified. `phase-advance.md` defines the bookkeeping (snapshot the old `research_goal.md` to `goal_revision_<date>.md`, edit the live one, note in `progress.md`) but does not address the methodology problem: by the time a project loops back, the test set has already been read in Analysis Report. Re-running experiments and re-reporting against the same test set is selection-bias-by-the-back-door — the worst kind of fabrication, because every artifact still looks audited.
+
+Two viable answers, neither in place yet:
+
+- **Strict**: Goal Revision invalidates the existing test split. Either a new hold-out is required (split from train, or freshly collected) or the report language for the revised cycle is auto-downgraded to "exploratory revision — non-confirmatory." The `test_set_guard` would re-engage on the original test split until a new split manifest is registered.
+- **Soft**: Add a mandatory "Test set use history" section to a Goal Revision template. Critic audits it: every revision cycle must enumerate which test artifacts have already been observed and what bias that introduces. No language enforcement, just visibility.
+
+**Trigger to revisit**: any project actually attempts a Goal Revision; OR before v0.2; OR when a critic audit catches a revised report citing the same test split as an earlier audited report.
+
 ## Sysbox-style sandbox isolation
 
 Per [`11_related_projects.md`](11_related_projects.md), MLE-bench's "dummy verifier proves it cannot read holdout labels" pattern is the strongest anti-fabrication guarantee in the landscape. Adding a sysbox (or rootless container) wrapper around `experiment_run` would harden the test-set firewall.
