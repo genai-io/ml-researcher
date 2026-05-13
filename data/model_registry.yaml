@@ -1,6 +1,6 @@
 # ML Model Registry — ml-researcher
 #
-# Structured ML knowledge base, queried by skills/ml/model-recommend.md.
+# Structured ML knowledge base, queried by skills/model-recommend/SKILL.md.
 # Each entry has a `last_verified` date; entries older than 90 days
 # are flagged stale by model-recommend.
 #

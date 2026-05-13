@@ -17,41 +17,32 @@ Most of ml-researcher's "tools" are recipes: "to register an experiment, run the
 
 ## Skill organization
 
-Skills live in `skills/` and are organized by domain:
+Skills live in `skills/`. Each skill is its own directory containing a `SKILL.md` file — the standard Anthropic Skills layout. The directory name is the skill's slug; runtimes (Claude Code, Gen Code, Codex) discover skills by walking `skills/*/SKILL.md`.
 
 ```
 skills/
-├── ml/                              # ML domain knowledge
-│   ├── model-recommend.md           # query model_registry.yaml; return curated picks
-│   ├── medical-small-sample-transfer.md
-│   ├── tabular-tabpfn-vs-xgboost.md
-│   ├── vision-classification-fine-tune.md
-│   ├── multimodal-vlm-finetune-siglip2.md
-│   ├── seg-sam2-finetune.md
-│   ├── nlp-classification-deberta-or-modernbert.md
-│   ├── embeddings-mteb-pick.md
-│   ├── image-gen-flux-lora.md
-│   ├── asr-whisper-or-parakeet.md
-│   ├── dpo-data-conversion.md
-│   ├── grpo-rewards.md
-│   └── oom-recovery-checklist.md
+├── model-recommend/SKILL.md             # query model_registry.yaml; return curated picks
+├── medical-small-sample-transfer/SKILL.md
+├── tabular-tabpfn-vs-xgboost/SKILL.md
+├── oom-recovery-checklist/SKILL.md
 │
-├── experiment/                      # L1/L2 loop mechanics
-│   ├── exp-register.md              # create experiments/EXPxxx/ + git branch
-│   ├── exp-run.md                   # python train.py > run.log 2>&1; timeout
-│   ├── metric-grep.md               # grep "^<key>:" run.log
-│   ├── git-keep-or-reset.md         # advance branch or revert
-│   └── ledger-append.md             # tab-separated append to ledger.tsv
+├── exp-register/SKILL.md                # create experiments/EXPxxx/ + git branch
+├── exp-run/SKILL.md                     # python train.py > run.log 2>&1; timeout
+├── metric-grep/SKILL.md                 # grep "^<key>:" run.log
+├── git-keep-or-reset/SKILL.md           # advance branch or revert
+├── ledger-append/SKILL.md               # tab-separated append to ledger.tsv
 │
-└── methodology/                     # L3 lifecycle and audit
-    ├── phase-advance.md             # check gate requirements; advance phase
-    ├── checklist-verify.md          # pre-flight: baseline, dataset format, ...
-    ├── iteration-log.md             # structured append to iteration_trace.md
-    ├── bootstrap-ci.md              # invoke scripts/bootstrap_ci.py
-    ├── delong-test.md               # invoke scripts/delong_test.py
-    ├── train-monitor.md             # tail run.log; classify divergence/oom/nan
-    └── figure-render.md             # invoke scripts/figure_render.py
+├── phase-advance/SKILL.md               # check gate requirements; advance phase
+├── checklist-verify/SKILL.md            # pre-flight: baseline, dataset format, ...
+├── iteration-log/SKILL.md               # structured append to iteration_trace.md
+├── bootstrap-ci/SKILL.md                # invoke scripts/bootstrap_ci.py
+├── delong-test/SKILL.md                 # invoke scripts/delong_test.py
+├── train-monitor/SKILL.md               # tail run.log; classify divergence/oom/nan
+├── figure-render/SKILL.md               # invoke scripts/figure_render.py
+└── expect-mode/SKILL.md                 # pipeline-scaffolding sandbox rules
 ```
+
+Skills group conceptually into three domains — ML knowledge (model-recommend, the *-transfer / *-finetune families, oom-recovery-checklist), experiment loop mechanics (exp-*, metric-grep, git-keep-or-reset, ledger-append), and methodology (phase-advance, checklist-verify, iteration-log, bootstrap-ci, delong-test, train-monitor, figure-render, expect-mode) — but the directory layout is flat because runtime skill discovery is one level deep.
 
 ## Skill format
 
@@ -105,7 +96,7 @@ Conventions:
 
 Example skill+script pair:
 
-`skills/methodology/bootstrap-ci.md`:
+`skills/bootstrap-ci/SKILL.md`:
 ```markdown
 ---
 name: bootstrap-ci
@@ -131,24 +122,24 @@ The earlier draft of this document listed `paper_search`, `dataset_inspect`, `mo
 
 | Earlier "tool" | Now |
 |---|---|
-| `paper_search` | skill `ml/paper-search.md` (uses `WebFetch` against arxiv / HF Papers / Semantic Scholar) |
-| `paper_read` | skill `ml/paper-read.md` (uses `WebFetch` for ar5iv) |
-| `citation_graph` | skill `ml/citation-graph.md` (uses `WebFetch` for Semantic Scholar) |
-| `dataset_inspect` | skill `ml/dataset-inspect.md` (uses `Bash` + HF datasets) |
-| `model_recommend` | skill `ml/model-recommend.md` (reads `data/model_registry.yaml`) |
-| `experiment_register` | skill `experiment/exp-register.md` |
-| `experiment_run` | skill `experiment/exp-run.md` |
-| `metric_grep` | skill `experiment/metric-grep.md` |
-| `git_keep_or_reset` | skill `experiment/git-keep-or-reset.md` |
-| `ledger_append` | skill `experiment/ledger-append.md` |
-| `phase_advance` | skill `methodology/phase-advance.md` (slash command also exists) |
-| `iteration_log` | skill `methodology/iteration-log.md` |
-| `checklist_verify` | skill `methodology/checklist-verify.md` |
-| `bootstrap_ci` | skill `methodology/bootstrap-ci.md` + `scripts/bootstrap_ci.py` |
-| `delong_test` | skill `methodology/delong-test.md` + `scripts/delong_test.py` |
-| `figure_render` | skill `methodology/figure-render.md` + `scripts/figure_render.py` |
-| `train_monitor` | skill `methodology/train-monitor.md` |
-| `oom_recover` | skill `ml/oom-recovery-checklist.md` |
+| `paper_search` | skill `paper-search/SKILL.md` (uses `WebFetch` against arxiv / HF Papers / Semantic Scholar) |
+| `paper_read` | skill `paper-read/SKILL.md` (uses `WebFetch` for ar5iv) |
+| `citation_graph` | skill `citation-graph/SKILL.md` (uses `WebFetch` for Semantic Scholar) |
+| `dataset_inspect` | skill `dataset-inspect/SKILL.md` (uses `Bash` + HF datasets) |
+| `model_recommend` | skill `model-recommend/SKILL.md` (reads `data/model_registry.yaml`) |
+| `experiment_register` | skill `exp-register/SKILL.md` |
+| `experiment_run` | skill `exp-run/SKILL.md` |
+| `metric_grep` | skill `metric-grep/SKILL.md` |
+| `git_keep_or_reset` | skill `git-keep-or-reset/SKILL.md` |
+| `ledger_append` | skill `ledger-append/SKILL.md` |
+| `phase_advance` | skill `phase-advance/SKILL.md` (slash command also exists) |
+| `iteration_log` | skill `iteration-log/SKILL.md` |
+| `checklist_verify` | skill `checklist-verify/SKILL.md` |
+| `bootstrap_ci` | skill `bootstrap-ci/SKILL.md` + `scripts/bootstrap_ci.py` |
+| `delong_test` | skill `delong-test/SKILL.md` + `scripts/delong_test.py` |
+| `figure_render` | skill `figure-render/SKILL.md` + `scripts/figure_render.py` |
+| `train_monitor` | skill `train-monitor/SKILL.md` |
+| `oom_recover` | skill `oom-recovery-checklist/SKILL.md` |
 
 ## Permissions
 

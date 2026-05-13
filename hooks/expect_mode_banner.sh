@@ -23,7 +23,7 @@ import json, os
 n = os.environ.get("EXPECT_COUNT", "0")
 ctx = (
     f'<expect-mode rows="{n}">ACTIVE — mock/subset/fake results allowed; '
-    'promotion to results/ blocked. See skills/methodology/expect-mode.md.'
+    'promotion to results/ blocked. See skills/expect-mode/SKILL.md.'
     '</expect-mode>'
 )
 print(json.dumps({

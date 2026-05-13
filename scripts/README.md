@@ -32,4 +32,4 @@ Run any script with `--help` for full options.
 2. Pure CLI — no environment variables, no config files. All config via flags.
 3. Output JSON on stdout if the result is structured. Free-form text only for `--help` and figures.
 4. Document in this README.
-5. Wire in via a corresponding skill in `skills/methodology/` or `skills/ml/`.
+5. Wire in via a corresponding skill at `skills/<slug>/SKILL.md`.

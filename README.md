@@ -83,7 +83,7 @@ After init, the project layout:
 │   ├── settings.json            # hooks + (gen) identity activation
 │   ├── identities/              # gen only — the persona file
 │   ├── agents/                  # 5 subagents
-│   ├── skills/                  # ~16 skills (ml/, experiment/, methodology/)
+│   ├── skills/                  # 17 skills, each at skills/<name>/SKILL.md (standard Anthropic Skills layout)
 │   ├── commands/                # 6 slash commands
 │   └── hooks/                   # 7 methodology hook scripts
 ├── respec/                      # methodology constitution (10 principles, 5 phases)
@@ -311,7 +311,7 @@ The agent always knows which loop is active. See [`spec/01_overview.md`](spec/01
 | **analyst** | Produces analysis reports, statistical comparisons |
 | **critic** | Methodology audit (no leakage, baseline present, locked test set) |
 
-Plus 16 skills (ml-domain, experiment, methodology), a 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
+Plus 17 skills (ml-domain, experiment, methodology — each as a standard `skills/<name>/SKILL.md`), a 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
 
 ---
 

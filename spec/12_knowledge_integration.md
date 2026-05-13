@@ -195,26 +195,26 @@ These replace LLM recall with curated/live answers. All of them are listed in [`
 
 Mirror ml-intern's tool list: `hf_inspect_dataset`, `hub_repo_details`, `github_find_examples`, `fetch_hf_docs`. Wire them as MCP servers (the official HF MCP + arxiv-mcp-server + a local model-registry MCP) so they refresh independently of binary releases.
 
-### Proposal 3 — `skills/ml/` directory
+### Proposal 3 — ML-domain skills
 
-Recipe-shaped markdown files with frontmatter description for trigger-based loading. Initial set, mapped to Section 2 domains:
+Recipe-shaped `SKILL.md` files (under `skills/<name>/SKILL.md`) with frontmatter description for trigger-based loading. Initial set, mapped to Section 2 domains:
 
-- `vision-classification-fine-tune.md`
-- `object-detection-rt-detr.md`
-- `seg-sam2-finetune.md`
-- `medical-small-sample-transfer.md`  ← rad-research's domain
-- `multimodal-vlm-finetune-siglip2.md`
-- `tabular-tabpfn-vs-xgboost.md`
-- `nlp-classification-deberta-or-modernbert.md`
-- `embeddings-mteb-pick.md`
-- `summarize-bart-pegasus.md`
-- `image-gen-flux-lora.md`
-- `asr-whisper-or-parakeet.md`
-- `dpo-data-conversion.md`
-- `grpo-rewards.md`
-- `oom-recovery-checklist.md`
+- `vision-classification-fine-tune/`
+- `object-detection-rt-detr/`
+- `seg-sam2-finetune/`
+- `medical-small-sample-transfer/`  ← rad-research's domain
+- `multimodal-vlm-finetune-siglip2/`
+- `tabular-tabpfn-vs-xgboost/`
+- `nlp-classification-deberta-or-modernbert/`
+- `embeddings-mteb-pick/`
+- `summarize-bart-pegasus/`
+- `image-gen-flux-lora/`
+- `asr-whisper-or-parakeet/`
+- `dpo-data-conversion/`
+- `grpo-rewards/`
+- `oom-recovery-checklist/`
 
-Each skill names 5-10 specific HF model IDs (version-pinned), expected data size, common pitfalls, and a reference implementation link. Format follows the gen-code skill registry contract.
+Each skill names 5-10 specific HF model IDs (version-pinned), expected data size, common pitfalls, and a reference implementation link. Format follows the standard Anthropic Skills contract (`SKILL.md` with `name`/`description` frontmatter).
 
 ### Proposal 4 — `internal/data/model_registry.yaml`
 

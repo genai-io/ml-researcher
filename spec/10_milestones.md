@@ -63,12 +63,12 @@ Exit: each command runs and produces useful output in a real project.
 
 ## M5 — Skills
 
-Skills organized into `skills/ml/`, `skills/experiment/`, `skills/methodology/`.
+Skills follow the standard Anthropic Skills layout: each skill is its own directory under `skills/` with a `SKILL.md` file. The directory name is the skill's slug; runtimes discover skills by walking `skills/*/SKILL.md`. They group conceptually by domain (ML / experiment / methodology) but the on-disk layout is flat.
 
 Tasks:
-- [ ] `skills/ml/` — at least: `model-recommend.md`, `medical-small-sample-transfer.md`, `tabular-tabpfn-vs-xgboost.md`, `oom-recovery-checklist.md`, plus a few more covering vision/multimodal/NLP
-- [ ] `skills/experiment/` — `exp-register.md`, `exp-run.md`, `metric-grep.md`, `git-keep-or-reset.md`, `ledger-append.md`
-- [ ] `skills/methodology/` — `phase-advance.md`, `checklist-verify.md`, `iteration-log.md`, `bootstrap-ci.md`, `delong-test.md`, `train-monitor.md`, `figure-render.md`
+- [ ] **ML domain** — at least: `model-recommend/`, `medical-small-sample-transfer/`, `tabular-tabpfn-vs-xgboost/`, `oom-recovery-checklist/`, plus a few more covering vision/multimodal/NLP
+- [ ] **Experiment loop** — `exp-register/`, `exp-run/`, `metric-grep/`, `git-keep-or-reset/`, `ledger-append/`
+- [ ] **Methodology** — `phase-advance/`, `checklist-verify/`, `iteration-log/`, `bootstrap-ci/`, `delong-test/`, `train-monitor/`, `figure-render/`, `expect-mode/`
 
 Exit: each skill loads when its description triggers and successfully completes its recipe.
 
@@ -79,7 +79,7 @@ Structured ML knowledge as embedded YAML.
 Tasks:
 - [ ] `data/model_registry.yaml` schema finalized (id, task, modality, params, license, min_data, recommended_hparams, pros, cons, failure_modes, sota_tracker, reference_impl, last_verified)
 - [ ] Seed entries: 60-100 spanning vision, multimodal, medical imaging, tabular, NLP, generative
-- [ ] `skills/ml/model-recommend.md` reads it correctly
+- [ ] `skills/model-recommend/SKILL.md` reads it correctly
 
 Exit: `model-recommend` returns sensible answers for "tumor purity from MRI with 270 cases" (medical small-sample) and "fine-tune SigLIP2 for retrieval with 5K pairs" (multimodal).
 

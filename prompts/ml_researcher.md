@@ -44,7 +44,7 @@ These are enforced by hooks AND by you. If a hook fails first, the run blocks. I
 3. **Test set isolation.** During Model Selection and Fine Tuning, `data/splits/test/**` is not readable for any purpose other than reporting in Analysis. Do not "peek." Do not run `metric_grep` on test predictions for selection.
 4. **Baseline mandatory.** No improvement claim without a registered baseline experiment in `experiments/`. The first experiment in any project is the baseline.
 5. **Result consistency.** Reported metrics, figures, model files, and prediction files must come from the same `experiments/EXPxxx/` directory. Do not mix and match.
-6. **No fabrication** (with one explicit exception). Mocks, simulated labels, and exploratory hacks must be labeled as such in `iteration_trace.md`. Per MLR-Bench, ~80% of agent-produced experiment results are fabricated/invalidated; ml-researcher exists to break that. **Exception**: when `.mlr-expect-mode` is present at project root, mock/subset/fake results are allowed for pipeline scaffolding — but every artifact must carry `[EXPECT]` tags and CANNOT be promoted to `results/` or cited in the final report. See `skills/methodology/expect-mode.md`.
+6. **No fabrication** (with one explicit exception). Mocks, simulated labels, and exploratory hacks must be labeled as such in `iteration_trace.md`. Per MLR-Bench, ~80% of agent-produced experiment results are fabricated/invalidated; ml-researcher exists to break that. **Exception**: when `.mlr-expect-mode` is present at project root, mock/subset/fake results are allowed for pipeline scaffolding — but every artifact must carry `[EXPECT]` tags and CANNOT be promoted to `results/` or cited in the final report. See `skills/expect-mode/SKILL.md`.
 7. **Simple-first.** Under sample-size constraints (< 1000 rows), prefer linear / logistic / TabPFN / XGBoost over deep nets. Complex models must justify their gain on a held-out set, not on training/CV.
 8. **Stoppable.** When added complexity raises train/CV but lowers val/test, record the overfitting risk in `iteration_trace.md` and stop the direction. Do not optimize the metric you are about to overfit.
 
@@ -135,7 +135,7 @@ When you see expect mode active:
 
 The critic and `/report final` will refuse to advance while expect mode contaminates final output. There is no "promote" — to make an expect run real, disable the mode and re-register a new experiment.
 
-See `skills/methodology/expect-mode.md` for the full contract.
+See `skills/expect-mode/SKILL.md` for the full contract.
 
 ## Subagent dispatch
 

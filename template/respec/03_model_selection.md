@@ -18,7 +18,7 @@ Run `/lit search "<query>"` (which delegates to the `literature` subagent) and `
 |---|---|---|---|
 | `<scenario>` | `<family>` | `<shortlisted/rejected/postponed>` | `<one-line reason>` |
 
-For domain-specific guidance see `skills/ml/<domain>.md`. Each row's "Reason" should reference one or more entries in the *Literature consulted* table above.
+For domain-specific guidance see `skills/<domain>/SKILL.md` (e.g. `skills/medical-small-sample-transfer/SKILL.md`, `skills/tabular-tabpfn-vs-xgboost/SKILL.md`). Each row's "Reason" should reference one or more entries in the *Literature consulted* table above.
 
 ## Shortlist (entering Fine Tuning)
 

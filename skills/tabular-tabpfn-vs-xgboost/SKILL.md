@@ -100,4 +100,4 @@ For radiomics / multimodal fusion, the right pattern is usually:
 - Tabular features → TabPFN or XGBoost → `tab_score`
 - Late fusion: linear / logistic on `(rad_score, tab_score)`
 
-See `skills/ml/medical-small-sample-transfer.md` for the full recipe.
+See `skills/medical-small-sample-transfer/SKILL.md` for the full recipe.

@@ -6,7 +6,7 @@ allowed-tools: Read, Grep
 
 # Steps
 
-1. **Read the registry**: `Read data/model_registry.yaml` (project root). If absent, fall back to ml-researcher's source registry — look in `<config-dir>/skills/ml/../../../data/model_registry.yaml` or note that the project lacks the registry.
+1. **Read the registry**: `Read data/model_registry.yaml` (project root). If absent, fall back to ml-researcher's source registry — look in `<config-dir>/skills/model-recommend/../../data/model_registry.yaml` or note that the project lacks the registry.
 
 2. **Identify constraints from the user's question**:
    - `task` — image_classification, object_detection, segmentation, vlm, medical_imaging, tabular, time_series, embedding, generation, asr, ...

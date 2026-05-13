@@ -124,7 +124,7 @@ The spec'd `if` field (`"if": "Write(data/raw/**)"`) is honored by gen-code but 
 When `.mlr-expect-mode` exists at project root, `expect_mode_banner.sh` injects:
 
 ```xml
-<expect-mode rows="3">ACTIVE — mock/subset/fake results allowed; promotion to results/ blocked. See skills/methodology/expect-mode.md.</expect-mode>
+<expect-mode rows="3">ACTIVE — mock/subset/fake results allowed; promotion to results/ blocked. See skills/expect-mode/SKILL.md.</expect-mode>
 ```
 
 `rows` counts `[EXPECT]` entries already in `experiments/ledger.tsv`. When the marker is absent, the hook exits silently — nothing is injected.

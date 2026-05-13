@@ -51,6 +51,6 @@ Expect mode: ON | OFF
 [EXPECT] rows in ledger: <n>
 ```
 
-If mode is ON, also remind: see `skills/methodology/expect-mode.md` for full rules.
+If mode is ON, also remind: see `skills/expect-mode/SKILL.md` for full rules.
 
 $ARGUMENTS
