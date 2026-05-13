@@ -15,7 +15,7 @@ Fill in `research/data_understanding.md` based on the dataset for **{{TOPIC}}**:
 - Cohort and Split (with locked test set)
 - Quality Control
 
-When complete, run `/phase` to verify advancement readiness, then `/phase advance` to move into Research Goal.
+When complete, run `/research phase` to verify advancement readiness, then `/research phase advance` to move into Research Goal.
 
 ## Blockers
 

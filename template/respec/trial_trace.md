@@ -2,7 +2,7 @@
 
 Append-only audit log of every meaningful experiment in the project.
 
-Each entry is added by the `iteration-log` skill (or manually) after an experiment is run and a decision is made.
+Each entry is added by the `trial-log` skill (or manually) after an experiment is run and a decision is made.
 
 ## Format
 

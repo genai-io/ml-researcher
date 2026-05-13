@@ -77,7 +77,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 8. **Append to ledger** (use `ledger-append` skill, status=`registered`).
 
-9. **Append to iteration trace** (use `iteration-log` skill).
+9. **Append to trial trace** (use `trial-log` skill).
 
 10. **Return** the experiment ID and path. Tell the user what file to edit first.
 

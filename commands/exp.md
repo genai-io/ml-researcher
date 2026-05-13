@@ -1,16 +1,20 @@
 ---
-description: Manage experiments. Subcommands: new <name>, loop --metric ... --budget ..., list, compare <id1> <id2>.
+description: Manage experiments (Experiment Loop). Subcommands: new <name>, list, compare <id1> <id2>, paper search|read|list.
 ---
 
 Parse `$ARGUMENTS` as `<subcommand> [args...]`. If no subcommand, print usage.
+
+The Experiment Loop owns *one EXPxxx direction* end-to-end: pick a direction, register it, gather literature, run trials (`/train run`), then decide. To kick off the autoresearch Train Loop inside the current experiment, use `/train run` (not part of this namespace).
 
 # Usage
 
 ```
 /exp new <name> [motivation]
-/exp loop [--metric <name>] [--budget <duration>] [--max-iter <n>]
 /exp list [--filter <status>]
 /exp compare <id1> <id2> [<id3>...] [--metric <name>] [--split val|test]
+/exp paper search <query> [--year-min <yyyy>] [--limit <n>]
+/exp paper list
+/exp paper read <paper-id>
 ```
 
 ---
@@ -29,25 +33,8 @@ Steps:
    - copy parent's train.py if a parent exists
 5. Create branch `mlr/exp/EXPxxx_<name>`, switch to it.
 6. Append a row to `experiments/ledger.tsv` (`ledger-append` skill, status=`registered`).
-7. Append an entry to `research/iteration_trace.md` (`iteration-log` skill).
-8. Tell the user what file to edit first.
-
----
-
-# Subcommand: loop
-
-Spawn the `experimenter` subagent to run a tight L1 autoresearch-style loop on the current experiment.
-
-1. Verify current branch matches `mlr/exp/EXP*_*`. Otherwise: error and tell the user to `/exp new` first.
-2. Run the `checklist-verify` skill with `kind=pre_experiment`. If anything fails, surface and stop.
-3. Spawn `experimenter` subagent with:
-   - working directory = `experiments/<exp_id>/`
-   - primary metric = `--metric` (required) or look up `research/research_goal.md`
-   - per-run budget = `--budget` (default 5min)
-   - max iterations = `--max-iter` (default unbounded)
-   - never-stop = true (autoresearch loop discipline)
-4. Do not interrupt the loop unless the user does.
-5. When the experimenter returns, summarize: iterations run, best metric, what changed at the best, ledger row count. Update `research/progress.md` if current best changed.
+7. Append an entry to `research/trial_trace.md` (`trial-log` skill).
+8. Tell the user what file to edit first, then suggest `/train run` to start the autoresearch loop.
 
 ---
 
@@ -77,5 +64,38 @@ Multi-experiment comparison with statistical tests.
 Use the language discipline from `CLAUDE.md` / `GEN.md`: "trend toward" for non-significant, "significantly better" only with passed test.
 
 If `--split test` is requested, the test_set_guard hook will block during Selection/Tuning phases.
+
+---
+
+# Subcommand: paper
+
+Literature triage. Delegates to the `literature` subagent.
+
+## paper search (`/exp paper search <query>`)
+
+1. Read `research/research_goal.md` for the project's data regime, task, and constraints. Pass as context to the subagent.
+2. Spawn `literature` subagent with:
+   - query = $ARGUMENTS rest
+   - constraints from research_goal
+   - output destination = `papers/shortlist.md` (append) and `papers/notes/<id>.md` (one per paper)
+   - limit = `--limit` (default 5)
+3. When the subagent returns, surface the top 3 candidates with one-line relevance plus the recommendation.
+
+## paper list (`/exp paper list`)
+
+Show the current literature shortlist.
+
+1. Read `papers/shortlist.md`.
+2. Print active entries grouped by section (Active / Rejected).
+3. For each entry, show: paper ID, title, one-line relevance.
+
+## paper read (`/exp paper read <paper-id>`)
+
+Fetch and notebook a single paper.
+
+1. Take paper ID (arxiv ID, HuggingFace papers ID, or DOI) from $ARGUMENTS.
+2. Use the `paper-read` skill (or WebFetch on ar5iv) to fetch the methodology / experiments / results sections.
+3. Write structured notes to `papers/notes/<paper-id>.md`.
+4. Surface the key methodology (model, dataset, metric, headline claim) to the user.
 
 $ARGUMENTS

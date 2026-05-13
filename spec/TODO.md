@@ -34,7 +34,7 @@ Currently, `init.sh --in-place` overwrites methodology files; it does not select
 
 ## Fail-closed phase parsing in test_set_guard
 
-`hooks/test_set_guard.sh` extracts the active phase from `research/progress.md` with a regex that requires a list-marker prefix (`- Phase:` or `* Phase:`). If a future edit to `progress.md` drops the marker — or a different agent writes the phase in a different format — the regex returns empty, `$PHASE` is empty, and the script falls through to `exit 0` (allow). The test-set lock silently fails open. This is the exact failure mode MLR-Bench cites as the leading source of fabricated results: a guardrail that looks installed but doesn't fire. Both `test_set_guard.sh` and `expect_mode_banner.sh` have similar progress.md-parsing brittleness, but `test_set_guard` is the dangerous one because it gates a methodology rule.
+`hooks/test_set_guard.sh` extracts the active phase from `research/progress.md` with a regex that requires a list-marker prefix (`- Phase:` or `* Phase:`). If a future edit to `progress.md` drops the marker — or a different agent writes the phase in a different format — the regex returns empty, `$PHASE` is empty, and the script falls through to `exit 0` (allow). The test-set lock silently fails open. This is the exact failure mode MLR-Bench cites as the leading source of fabricated results: a guardrail that looks installed but doesn't fire. Both `test_set_guard.sh` and `sandbox_mode_banner.sh` have similar progress.md-parsing brittleness, but `test_set_guard` is the dangerous one because it gates a methodology rule.
 
 **Fix direction**: when phase parsing fails, default to fail-closed for guards that protect locked data (block with a clear "couldn't determine phase — refusing to read locked split" message). For non-guard hooks (banner, nudge), fail-open is fine. Alternative: parse `progress.md` via a single shared helper that fail-loud's on parse failure, so the brittleness lives in one place.
 
@@ -61,7 +61,7 @@ Per [`11_related_projects.md`](11_related_projects.md), MLE-bench's "dummy verif
 
 AI-Scientist v2 uses best-first tree search over experimental directions, with a separate experiment-manager agent that prunes branches. AIDE produces an HTML tree visualization of every solution attempt. ml-researcher's flat ledger.tsv could grow into a tree, with HTML rendering.
 
-**Trigger to revisit**: users report that linear `iteration_trace.md` doesn't reflect the branching structure of their actual research.
+**Trigger to revisit**: users report that linear `trial_trace.md` doesn't reflect the branching structure of their actual research.
 
 ## Automated paper drafting
 

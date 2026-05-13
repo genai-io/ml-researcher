@@ -9,7 +9,7 @@ Argument parsing:
 - If empty, infer from current state:
   - On an `mlr/exp/*` branch with uncommitted changes → `pre-experiment`
   - `progress.md` says "ready to advance" or recent activity is filling stage docs → `pre-phase-advance`
-  - User just ran `/exp loop` and current-best changed → `pre-finalize`
+  - User just ran `/train run` and current-best changed → `pre-finalize`
 
 Use the `checklist-verify` skill with the matching `kind`.
 
@@ -25,6 +25,6 @@ Result: <PASS|FAIL>
 
 If FAIL, list each unmet check on its own line with the specific remediation.
 
-If PASS, state what action is now safe to take (e.g., "safe to /exp loop" or "safe to /phase advance").
+If PASS, state what action is now safe to take (e.g., "safe to /train run" or "safe to /research phase advance").
 
 $ARGUMENTS

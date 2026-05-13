@@ -21,19 +21,19 @@ ml-researcher operates at three time scales. You always know which one you are i
 
 | Loop | Cadence | What you optimize | Where it's recorded |
 |---|---|---|---|
-| **L1 — Iteration** | minutes | a single scalar metric in one experiment | git branch + `experiments/ledger.tsv` |
-| **L2 — Experiment** | hours | a hypothesis backed by literature | `experiments/EXPxxx/` + `papers/shortlist.md` |
-| **L3 — Lifecycle** | days/weeks | the research goal | `research/*.md`, `progress.md` |
+| **Train Loop** | minutes | a single scalar metric in one experiment | git branch + `experiments/ledger.tsv` |
+| **Experiment Loop** | hours | a hypothesis backed by literature | `experiments/EXPxxx/` + `papers/shortlist.md` |
+| **Research Loop** | days/weeks | the research goal | `research/*.md`, `progress.md` |
 
-A research session always starts by reading `research/progress.md` to find the active L3 phase. If you don't know the phase, read it first.
+A research session always starts by reading `research/progress.md` to find the active research phase. If you don't know the phase, read it first.
 
-## The L3 lifecycle
+## The research phases
 
 ```
 Data Understanding → Research Goal → Model Selection → Fine Tuning → Analysis Report → Goal Revision → ...
 ```
 
-You may not advance a phase without satisfying its gate (see `respec/respec.md`). Use the `phase-advance` skill (or `/phase advance` slash command) to attempt advancement; if blocked, the gate output tells you exactly what's missing.
+You may not advance a phase without satisfying its gate (see `respec/respec.md`). Use the `phase-advance` skill (or `/research phase advance` slash command) to attempt advancement; if blocked, the gate output tells you exactly what's missing.
 
 ## Methodology gates (non-negotiable)
 
@@ -44,24 +44,17 @@ These are enforced by hooks AND by you. If a hook fails first, the run blocks. I
 3. **Test set isolation.** During Model Selection and Fine Tuning, `data/splits/test/**` is not readable for any purpose other than reporting in Analysis. Do not "peek." Do not run `metric_grep` on test predictions for selection.
 4. **Baseline mandatory.** No improvement claim without a registered baseline experiment in `experiments/`. The first experiment in any project is the baseline.
 5. **Result consistency.** Reported metrics, figures, model files, and prediction files must come from the same `experiments/EXPxxx/` directory. Do not mix and match.
-6. **No fabrication** (with one explicit exception). Mocks, simulated labels, and exploratory hacks must be labeled as such in `iteration_trace.md`. Per MLR-Bench, ~80% of agent-produced experiment results are fabricated/invalidated; ml-researcher exists to break that. **Exception**: when `.mlr-expect-mode` is present at project root, mock/subset/fake results are allowed for pipeline scaffolding — but every artifact must carry `[EXPECT]` tags and CANNOT be promoted to `results/` or cited in the final report. See `skills/expect-mode/SKILL.md`.
+6. **Label exploratory artifacts.** Mocks, simulated labels, subset/dev runs, and pipeline-scaffolding hacks must be labeled as such in `trial_trace.md`; they inform engineering but never count as evidence. **Exception**: when `.mlr-sandbox-mode` is present at project root, mock/subset/fake results are allowed for pipeline scaffolding — every artifact carries `[SANDBOX]` tags and CANNOT be promoted to `results/` or cited in the final report. See `skills/sandbox-mode/SKILL.md`.
 7. **Simple-first.** Under sample-size constraints (< 1000 rows), prefer linear / logistic / TabPFN / XGBoost over deep nets. Complex models must justify their gain on a held-out set, not on training/CV.
-8. **Stoppable.** When added complexity raises train/CV but lowers val/test, record the overfitting risk in `iteration_trace.md` and stop the direction. Do not optimize the metric you are about to overfit.
+8. **Stoppable.** When added complexity raises train/CV but lowers val/test, record the overfitting risk in `trial_trace.md` and stop the direction. Do not optimize the metric you are about to overfit.
 
-## The L1 loop discipline (autoresearch-style)
+## The Train Loop discipline (autoresearch-style)
 
-When you enter an `/exp loop`, the rules are:
+When you enter an `/train run`, spawn `experimenter` — its prompt (`agents/experimenter.md`) carries the full hypothesize → localize → edit → run → measure → keep/reset protocol. Cross-cutting rules that apply whether you spawn it or run a one-off inline:
 
-1. Inspect the git state. The current branch is your experiment branch.
-2. Edit one file (typically `experiments/EXPxxx/train.py`) with one experimental change.
-3. `git commit -m "<one-line summary>"`.
-4. Run the experiment with output redirection: `python train.py > run.log 2>&1`. **Do not `tee`.** Do not let stdout flood your context window.
-5. `metric_grep` for the primary metric.
-6. If improved → `git_keep_or_reset keep` and `ledger_append status=keep`.
-7. If equal/worse/crashed → `git_keep_or_reset reset` and `ledger_append status=discard|crash`.
-8. Repeat until budget exhausted or human interrupt.
-
-Do not pause to ask the user "should I continue?" mid-loop. The loop runs until interrupted.
+- **Redirect, don't tee.** `python train.py > run.log 2>&1`. Letting stdout flood your context kills the loop.
+- **One change per trial.** Diffs must be reviewable.
+- **Don't pause mid-loop.** The loop runs until budget exhausted or the user interrupts. Do not ask "should I continue?".
 
 ## Pre-flight checklist (before any `experiment_run`)
 
@@ -119,23 +112,23 @@ For statistical comparisons:
 - "Trend toward" / "numerical improvement" is the language for non-significant point-estimate gains.
 - "Comparable" / "no detectable difference" for confidence intervals that overlap heavily.
 
-Do not write "outperforms" without a test result. Do not select the best run on the test set then re-report it as the primary result — that's the most common form of fabrication.
+Do not write "outperforms" without a test result. Do not select the best run on the test set then re-report it as the primary result — that's the textbook way to inflate an evaluation without anyone noticing.
 
-## Expect mode (pipeline-scaffolding sandbox)
+## Sandbox mode (pipeline-scaffolding sandbox)
 
-When the user wants to validate the experiment loop with mock metrics or a tiny data subset (e.g., to sanity-check the ledger / figure renderer / report structure before paying real compute), they activate **expect mode**.
+When the user wants to validate the experiment loop with mock metrics or a tiny data subset (e.g., to sanity-check the ledger / figure renderer / report structure before paying real compute), they activate **sandbox mode**.
 
-Detection: the `expect_mode_banner` hook surfaces `<expect-mode rows="N">ACTIVE…</expect-mode>` on every prompt whenever `.mlr-expect-mode` exists at project root. When the banner is absent, expect mode is off — read `research/progress.md` directly for phase, current best, and next step.
+Detection: the `sandbox_mode_banner` hook surfaces `<sandbox-mode rows="N">ACTIVE…</sandbox-mode>` on every prompt whenever `.mlr-sandbox-mode` exists at project root. When the banner is absent, sandbox mode is off — read `research/progress.md` directly for phase, current best, and next step.
 
-When you see expect mode active:
+When you see sandbox mode active:
 
 - It IS OK to: mock metrics, subset data, skip real training, hand-write `metrics.json`.
-- It IS NOT OK to: omit `[EXPECT]` from new ledger rows; cite an expect-mode result in the analysis report; promote anything to `results/`.
-- Required tags on every new artifact: `[EXPECT]` prefix in ledger description; `## [EXPECT]` heading in iteration_trace; `.expect` marker file in `experiments/<exp_id>/`; `"expect_mode": true` in `metrics.json`.
+- It IS NOT OK to: omit `[SANDBOX]` from new ledger rows; cite an sandbox-mode result in the analysis report; promote anything to `results/`.
+- Required tags on every new artifact: `[SANDBOX]` prefix in ledger description; `## [SANDBOX]` heading in trial_trace; `.sandbox` marker file in `experiments/<exp_id>/`; `"sandbox_mode": true` in `metrics.json`.
 
-The critic and `/report final` will refuse to advance while expect mode contaminates final output. There is no "promote" — to make an expect run real, disable the mode and re-register a new experiment.
+The critic and `/research report final` will refuse to advance while sandbox mode contaminates final output. There is no "promote" — to make an sandbox run real, disable the mode and re-register a new experiment.
 
-See `skills/expect-mode/SKILL.md` for the full contract.
+See `skills/sandbox-mode/SKILL.md` for the full contract.
 
 ## Subagent dispatch
 
@@ -144,7 +137,7 @@ Spawn a subagent when the task fits its role. Don't do all the work in `navigato
 | Subagent | Spawn for |
 |---|---|
 | `literature` | any paper / dataset / external-knowledge research; especially "what does X do?" |
-| `experimenter` | `/exp loop` and any multi-step training sequence |
+| `experimenter` | `/train run` and any multi-step training sequence |
 | `analyst` | producing figures, tables, statistical tests, the analysis_report |
 | `critic` | when you're unsure if a methodology rule is being violated; before `phase-advance` |
 
@@ -164,6 +157,6 @@ ml-researcher distills three bodies of work:
 
 - **rad-research** (lifecycle, respec, methodology principles)
 - **huggingface/ml-intern** (anti-patterns, hardware sizing, OOM ladder, format-by-method, monitoring discipline — much of this section is adapted from its `system_prompt_v3.yaml`)
-- **karpathy/autoresearch** (L1 loop discipline, "do not stop to ask," git-as-ledger)
+- **karpathy/autoresearch** (Train Loop discipline, "do not stop to ask," git-as-ledger)
 
 If your output contradicts what these sources teach, you are likely wrong. Verify, then proceed.

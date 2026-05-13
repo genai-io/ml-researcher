@@ -82,7 +82,7 @@ After init, the project layout:
 ├── .<claude|gen|codex>/
 │   ├── settings.json            # hooks + (gen) identity activation
 │   ├── identities/              # gen only — the persona file
-│   ├── agents/                  # 5 subagents
+│   ├── agents/                  # 6 subagents
 │   ├── skills/                  # 17 skills, each at skills/<name>/SKILL.md (standard Anthropic Skills layout)
 │   ├── commands/                # 6 slash commands
 │   └── hooks/                   # 7 methodology hook scripts
@@ -100,32 +100,32 @@ After init, the project layout:
 
 ---
 
-## The research lifecycle
+## The three loops
 
-Every project flows through five phases. **Each phase is gated** — the agent (and hooks) prevent advancement until requirements are met.
+ml-researcher applies different discipline at three **nested** time scales — the outer one advances when the inner ones close.
 
 ```
-[Bootstrap]
-    │
-    ▼
-1. Data Understanding → 2. Research Goal → 3. Model Selection
-                                              │
-                                              ▼
-                          5. Analysis Report ← 4. Fine Tuning
-                                                  │
-                                                  └─→ (loop within phase 4)
+Research Loop      ·  days/weeks  ·  the whole project
+│  Data Understanding → Research Goal → Model Selection
+│  → Fine Tuning → Analysis Report
+│
+└─ Experiment Loop ·  hours       ·  one EXPxxx direction
+   │  Plan → Paper / Modeler → Sandbox → Submit → Monitor → Decide
+   │
+   └─ Train Loop   ·  minutes     ·  = karpathy autoresearch
+         Hypothesize → Edit → Run → Measure → Keep / Reset
 ```
 
-Six unified slash commands cover the whole lifecycle:
+**Each Research-Loop phase is gated** — the agent (and hooks) prevent advancement until requirements are met. Six slash commands map onto the three layers:
 
-| Command | Purpose |
+| Loop | Commands |
 |---|---|
-| `/phase` | Show current phase + advance requirements; `/phase advance` to transition |
-| `/exp` | `new <name>`, `loop`, `list`, `compare` — manage experiments |
-| `/lit` | `search <query>`, `list`, `read <id>` — literature triage |
-| `/report` | `draft`, `final` — produce analysis report |
-| `/check` | Run pre-flight checklist |
-| `/audit` | Spawn critic for methodology audit |
+| **Research** | `/research phase` (navigate phases) · `/research report` (analysis report) |
+| **Experiment** | `/exp new` · `/exp list` · `/exp compare` · `/exp paper` (literature) |
+| **Train** | `/train run` (kick off autoresearch) |
+| cross-layer | `/preflight` (pre-flight) · `/audit` (methodology audit) |
+
+See [`spec/01_overview.md`](spec/01_overview.md) for the failure modes and guardrails per loop.
 
 ---
 
@@ -147,7 +147,7 @@ cd gbm-tumor-purity && gen
 Goal: write `research/data_understanding.md` so any reader can answer *what data is this, what does it support, what doesn't it*.
 
 ```
-> /phase
+> /research phase
 Current: Data Understanding
 To advance: research/data_understanding.md filled, data/splits/ populated.
 
@@ -157,14 +157,14 @@ To advance: research/data_understanding.md filled, data/splits/ populated.
 
 The agent walks the template, enforcing **patient-level splits** (not slice-level — patient leakage is the most common small-sample bug) and **locking the test split** before any model is trained.
 
-When ready: `/phase advance`.
+When ready: `/research phase advance`.
 
 ### Phase 2 — Research Goal
 
 Goal: write `research/research_goal.md` so the question, success criteria, and statistical reporting language are committed before any modeling begins.
 
 ```
-> /phase advance
+> /research phase advance
 ✓ Now in Research Goal.
 
 > Help me draft research_goal.md. Primary endpoint TP ≥ 60.8%; compare
@@ -178,14 +178,14 @@ The agent fills:
 - Required figures & tables
 - Risks (small N, label noise, leakage paths)
 
-`/phase advance` when ready.
+`/research phase advance` when ready.
 
 ### Phase 3 — Model Selection
 
 Goal: write `research/model_selection.md` with a candidate matrix, shortlist, and rejection log.
 
 ```
-> /lit search "small-sample radiomics + clinical fusion"
+> /exp paper search "small-sample radiomics + clinical fusion"
 
 Literature subagent appended 5 papers to papers/shortlist.md.
 Recommendation: late-fusion (clinical_score + rad_score) is the
@@ -199,13 +199,13 @@ strongest small-N pattern.
   - google/medgemma-4b-pt    — needs more data than encoder-only models
 ```
 
-Fill `research/model_selection.md`, then **register and run the baseline** before advancing — `/phase advance` to Fine Tuning is gated on `baseline-kept` (no improvement claims without a comparator):
+Fill `research/model_selection.md`, then **register and run the baseline** before advancing — `/research phase advance` to Fine Tuning is gated on `baseline-kept` (no improvement claims without a comparator):
 
 ```
 > /exp new baseline-clinical-l2
 ✓ EXP001 registered, branch mlr/exp/EXP001_baseline-clinical-l2
 
-> /exp loop --metric val_auc --budget 1min --max-iter 20
+> /train run --metric val_auc --budget 1min --max-iter 20
 [EXP001] iter 1: C=1.0  → 0.658 keep
 [EXP001] iter 2: C=0.1  → 0.661 keep
 [EXP001] iter 3: C=10   → 0.643 discard (git reset)
@@ -213,21 +213,21 @@ Fill `research/model_selection.md`, then **register and run the baseline** befor
 Best val_auc=0.661.
 ```
 
-`/phase advance` now passes — baseline is in the ledger with `status=keep`.
+`/research phase advance` now passes — baseline is in the ledger with `status=keep`.
 
 ### Phase 4 — Fine Tuning
 
-Goal: explore the rest of the shortlist within fixed bounds. The L1 autoresearch loop runs many iterations; each is git-committed.
+Goal: explore the rest of the shortlist within fixed bounds. The Train Loop (autoresearch) runs many trials; each is git-committed.
 
 ```
 > /exp new combined-linear-svm
 ✓ EXP002 registered, branch mlr/exp/EXP002_combined-linear-svm
 
-> /exp loop --metric val_auc --budget 5min
+> /train run --metric val_auc --budget 5min
 Best val_auc=0.700 → new current best.
 ```
 
-For each iteration the experimenter subagent:
+For each trial the experimenter subagent:
 1. Edits `train.py` with one change
 2. Runs `python train.py > run.log 2>&1` (no tee — output redirection only)
 3. Greps the metric line
@@ -255,12 +255,12 @@ DeLong (val): p=0.46 — trend toward improvement, not significant.
 Advancing to Analysis **unlocks the test set** for the first and only time:
 
 ```
-> /phase advance
+> /research phase advance
 Spawning critic for audit…
 PASS — baseline registered, splits patient-level, no test-set reads.
 ✓ Advanced to Analysis Report.
 
-> /report draft
+> /research report draft
 analyst subagent computing test AUC + bootstrap CI per model, DeLong
 paired test (clinical vs combined): p=0.46.
 
@@ -275,43 +275,29 @@ is "trend toward improvement," not "significantly outperforms."
 > /audit report
 critic verdict: PASS.
 
-> /report final
+> /research report final
 Promoted figures to results/figures/, tables to results/tables/.
 Updated results/README.md with the finalized summary.
 ```
 
-Done. Every metric traces to a specific commit. Every accept/reject is in `research/iteration_trace.md`. The test set was untouched until Analysis. The project is reproducible from `git clone` alone.
-
----
-
-## Three-layer loop discipline
-
-ml-researcher applies different discipline at three time scales:
-
-```
-L3 · Lifecycle Loop      (days/weeks)
-     Data → Goal → Selection → Tuning → Report → Revision
-L2 · Experiment Loop     (hours)
-     Plan → Research → Sandbox → Submit → Monitor → Decide
-L1 · Iteration Loop      (minutes)
-     Edit → Run → Measure → Keep or Reset
-```
-
-The agent always knows which loop is active. See [`spec/01_overview.md`](spec/01_overview.md).
+Done. Every metric traces to a specific commit. Every accept/reject is in `research/trial_trace.md`. The test set was untouched until Analysis. The project is reproducible from `git clone` alone.
 
 ---
 
 ## Built-in components
 
-| Subagents | Role |
-|---|---|
-| **navigator** | Top-level dispatcher; advances L3 |
-| **literature** | Paper search, citation graph, dataset discovery |
-| **experimenter** | Runs the L1 edit-run-measure-keep loop |
-| **analyst** | Produces analysis reports, statistical comparisons |
-| **critic** | Methodology audit (no leakage, baseline present, locked test set) |
+Six subagents, each owning a specific loop level:
 
-Plus 17 skills (ml-domain, experiment, methodology — each as a standard `skills/<name>/SKILL.md`), a 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
+| Subagent | Loop | Role |
+|---|---|---|
+| **navigator** | Research | Top-level dispatcher; advances phases |
+| **literature** | Experiment | Paper / citation-graph / dataset discovery — *what exists* |
+| **modeler** | Experiment | Candidate model matrix + rejection log — *what to actually try* |
+| **experimenter** | Train | Runs the autoresearch loop |
+| **analyst** | Research | Analysis report + statistical tests |
+| **critic** | cross-layer | Methodology audit (no leakage, baseline present, locked test set) |
+
+Plus 17 skills (ml-domain, experiment, methodology — each as a standard `skills/<name>/SKILL.md`), an 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
 
 ---
 

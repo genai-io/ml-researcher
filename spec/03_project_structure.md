@@ -26,7 +26,7 @@ my-research/
 │   ├── 03_model_selection.md
 │   ├── 04_fine_tuning.md
 │   ├── 05_analysis_report.md
-│   ├── iteration_trace.md
+│   ├── trial_trace.md
 │   └── progress.md
 │
 ├── research/                        # filled-in records for this project
@@ -35,7 +35,7 @@ my-research/
 │   ├── research_goal.md
 │   ├── model_selection.md
 │   ├── fine_tuning.md
-│   ├── iteration_trace.md           # full experiment audit log
+│   ├── trial_trace.md           # full experiment audit log
 │   └── analysis_report.md
 │
 ├── data/

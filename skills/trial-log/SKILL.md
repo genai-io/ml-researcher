@@ -1,12 +1,12 @@
 ---
-name: iteration-log
-description: Append a structured entry to research/iteration_trace.md with motivation, change diff, parameters, results, decision, and next step. Used after every meaningful experiment.
+name: trial-log
+description: Append a structured entry to research/trial_trace.md with motivation, change diff, parameters, results, decision, and next step. Used after every meaningful experiment.
 allowed-tools: Read, Edit
 ---
 
 # Entry format
 
-Each entry is a section in `research/iteration_trace.md`:
+Each entry is a section in `research/trial_trace.md`:
 
 ```markdown
 ## EXP<id>_<name> — <date>
@@ -26,7 +26,7 @@ Each entry is a section in `research/iteration_trace.md`:
 
 # Steps
 
-1. Read `research/iteration_trace.md`. If absent, create it with a header:
+1. Read `research/trial_trace.md`. If absent, create it with a header:
    ```markdown
    # Iteration Trace
 
@@ -53,7 +53,7 @@ Each entry is a section in `research/iteration_trace.md`:
 
 - Every meaningful experiment gets an entry. "Meaningful" = registered + run + decided. Crashes-only without a decision can be skipped.
 - Be honest about negative results. "Tried wavelet features; AUC dropped 0.05; stop this direction" is more valuable than silence.
-- Cite the experiment ID in any other document that references this entry — the iteration trace is the audit source.
+- Cite the experiment ID in any other document that references this entry — the trial trace is the audit source.
 
 # Example
 

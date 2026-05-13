@@ -18,7 +18,7 @@ This project investigates **{{TOPIC}}**. The methodology and templates live in `
 - Research goal: [`research/research_goal.md`](research/research_goal.md)
 - Model selection: [`research/model_selection.md`](research/model_selection.md)
 - Fine tuning: [`research/fine_tuning.md`](research/fine_tuning.md)
-- Iteration trace: [`research/iteration_trace.md`](research/iteration_trace.md)
+- Iteration trace: [`research/trial_trace.md`](research/trial_trace.md)
 - Analysis report: [`research/analysis_report.md`](research/analysis_report.md)
 - Experiments: [`experiments/README.md`](experiments/README.md)
 - Results: [`results/README.md`](results/README.md)
@@ -28,11 +28,11 @@ This project investigates **{{TOPIC}}**. The methodology and templates live in `
 
 ```
 claude   # or `gen` / `codex` depending on runtime
-> /phase                 # see what's needed to advance the phase
-> /lit-search "<query>"  # delegate literature triage
-> /exp-new <name>        # register an experiment
-> /exp-loop --metric <m> # autoresearch-style iteration loop
-> /report draft          # produce analysis report draft
+> /research phase                 # see what's needed to advance the phase
+> /exp paper search "<query>"  # delegate literature triage
+> /exp new <name>        # register an experiment
+> /train run --metric <m> # autoresearch-style Train Loop
+> /research report draft          # produce analysis report draft
 ```
 
 System prompt and methodology guardrails are loaded from this directory automatically.

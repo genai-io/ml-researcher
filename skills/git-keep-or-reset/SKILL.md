@@ -1,6 +1,6 @@
 ---
 name: git-keep-or-reset
-description: After an experiment iteration, advance the experiment branch (keep) or revert to the previous commit (reset). The git branch IS the audit trail of what improved.
+description: After a trial, advance the experiment branch (keep) or revert to the previous commit (reset). The git branch IS the audit trail of what improved.
 allowed-tools: Bash
 ---
 
@@ -32,7 +32,7 @@ echo "→ reset to $(git rev-parse --short HEAD)"
 
 ## crash
 
-Same as reset, but record `status=crash` in the ledger so the user/analyst can see how many iterations crashed vs were merely worse.
+Same as reset, but record `status=crash` in the ledger so the user/analyst can see how many trials crashed vs were merely worse.
 
 ```bash
 git reset --hard HEAD~1

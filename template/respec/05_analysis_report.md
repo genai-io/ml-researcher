@@ -80,7 +80,7 @@ State plainly:
 
 - `research/research_goal.md` (locked at start)
 - `experiments/ledger.tsv` (full audit trail)
-- `research/iteration_trace.md` (per-experiment rationale)
+- `research/trial_trace.md` (per-experiment rationale)
 - `papers/shortlist.md` (literature)
 - key paper IDs / URLs
 

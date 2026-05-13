@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Auto-append a stub iteration_trace entry after exp-run completes.
+# Auto-append a stub trial_trace entry after exp-run completes.
 # Async hook — best-effort; fail silently rather than block.
 set -uo pipefail
 
@@ -15,7 +15,7 @@ case "$BRANCH" in
 esac
 
 DATE=$(date +%Y-%m-%d)
-TRACE="research/iteration_trace.md"
+TRACE="research/trial_trace.md"
 [ -f "$TRACE" ] || echo "# Iteration Trace" > "$TRACE"
 
 # Append a stub for the agent to fill in. We don't try to parse the metric

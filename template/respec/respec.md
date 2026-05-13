@@ -42,14 +42,14 @@ Data Understanding
 
 ## 3. Cross-cutting records
 
-`iteration_trace.md` and `progress.md` are **not** lifecycle stages — they are records that span all stages.
+`trial_trace.md` and `progress.md` are **not** lifecycle stages — they are records that span all stages.
 
 | Record | Scope | Answers | Updated when |
 |---|---|---|---|
-| `iteration_trace.md` | Experiment audit | Why was each experiment run? what changed? results? accepted? | After every meaningful experiment, tuning, sensitivity, or finalization |
+| `trial_trace.md` | Experiment audit | Why was each experiment run? what changed? results? accepted? | After every meaningful experiment, tuning, sensitivity, or finalization |
 | `progress.md` | Project state | Where are we; what's the current best; what's next; what's blocking? | When a phase completes, current best changes, conclusion changes, or a blocker appears |
 
-`progress.md` references `iteration_trace.md` by experiment ID; it does not duplicate experiment detail.
+`progress.md` references `trial_trace.md` by experiment ID; it does not duplicate experiment detail.
 
 ## 4. Phase boundaries
 
@@ -75,7 +75,7 @@ Not a lifecycle stage; an experiment audit log. Each entry: experiment ID, motiv
 
 ### Progress
 
-Not a lifecycle stage; a project state log. Records current phase, current best experiment, main conclusion, next step, blockers — references `iteration_trace.md` by ID.
+Not a lifecycle stage; a project state log. Records current phase, current best experiment, main conclusion, next step, blockers — references `trial_trace.md` by ID.
 
 ### Analysis Report
 

@@ -10,7 +10,7 @@
 
 ## Compute budget per model
 
-| Model | Max iterations | Wall-clock budget |
+| Model | Max trials | Wall-clock budget |
 |---|---|---|
 | | | |
 

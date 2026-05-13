@@ -27,7 +27,7 @@ Match the audit to the trigger. If invoked before `phase-advance`, run the phase
 
 ### Test-set isolation
 
-- During phases ∈ {Model Selection, Fine Tuning}, no `Read` or `Bash` operations against `data/splits/test/**` should appear in `iteration_trace.md` or in `experiments/EXPxxx/run.log`.
+- During phases ∈ {Model Selection, Fine Tuning}, no `Read` or `Bash` operations against `data/splits/test/**` should appear in `trial_trace.md` or in `experiments/EXPxxx/run.log`.
 - No test-set columns in `experiments/EXPxxx/metrics.json` for non-Analysis-phase experiments.
 - Severity: **BLOCK** if violated.
 
@@ -59,18 +59,18 @@ Match the audit to the trigger. If invoked before `phase-advance`, run the phase
 
 ### Iteration trace completeness
 
-- For every `experiments/EXPxxx/` directory, there should be a corresponding entry in `research/iteration_trace.md` keyed by `exp_id`.
+- For every `experiments/EXPxxx/` directory, there should be a corresponding entry in `research/trial_trace.md` keyed by `exp_id`.
 - Severity: **WARN**.
 
 ### Expect-mode contamination
 
-- Any `[EXPECT]` token in `research/analysis_report.md` → **BLOCK**.
-- Any file under `results/` whose source experiment has `.expect` marker → **BLOCK**.
-- Any `metrics.json` with `"expect_mode": true` referenced by `research/analysis_report.md` → **BLOCK**.
-- Project root `.mlr-expect-mode` file present AND scope is `report` or `current-best` while phase = `Analysis Report` → **BLOCK** (cannot finalize while expect mode is on).
-- Project has `[EXPECT]` rows in `experiments/ledger.tsv` AND analysis_report cites at least one of them → **BLOCK** with the offending exp_ids listed.
+- Any `[SANDBOX]` token in `research/analysis_report.md` → **BLOCK**.
+- Any file under `results/` whose source experiment has `.sandbox` marker → **BLOCK**.
+- Any `metrics.json` with `"sandbox_mode": true` referenced by `research/analysis_report.md` → **BLOCK**.
+- Project root `.mlr-sandbox-mode` file present AND scope is `report` or `current-best` while phase = `Analysis Report` → **BLOCK** (cannot finalize while sandbox mode is on).
+- Project has `[SANDBOX]` rows in `experiments/ledger.tsv` AND analysis_report cites at least one of them → **BLOCK** with the offending exp_ids listed.
 
-If `.mlr-expect-mode` is present but the audit scope is general (not finalization-related) and no expect artifact has leaked, return WARN noting the active mode.
+If `.mlr-sandbox-mode` is present but the audit scope is general (not finalization-related) and no sandbox artifact has leaked, return WARN noting the active mode.
 
 ## Cite specific lines
 

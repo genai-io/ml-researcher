@@ -32,7 +32,7 @@ v1 is a tightly-templated pipeline: ideation → implementation → analysis →
 
 > "removes reliance on human-authored templates, generalizes across Machine Learning (ML) domains, and employs a progressive agentic tree search"
 
-The experiment-manager-agent pattern is worth stealing: a separate role that decides *which* experimental directions to expand vs prune, distinct from the worker that actually runs experiments. ml-researcher's `navigator` agent is positioned to play this role at L3, with `experimenter` doing the L1 work.
+The experiment-manager-agent pattern is worth stealing: a separate role that decides *which* experimental directions to expand vs prune, distinct from the worker that actually runs experiments. ml-researcher's `navigator` agent plays this role at the Research Loop level, with `experimenter` doing the Train Loop-level work.
 
 **Caution**: v1 ships a critical safety warning — *"This codebase will execute LLM-written code. There are various risks and challenges associated with this autonomy."* ml-researcher's hooks + permission system address this.
 
@@ -44,7 +44,7 @@ The benchmark itself is a curated set of 75 Kaggle competitions. The contributio
 - **Hidden test labels** — the "private" data is sealed at the harness level
 - **Dummy verifier** — *"the dummy agent checks that it can't read the 'private' data; this includes the labels of the test set"*
 
-The dummy-verifier pattern is the single most useful idea here: a precondition agent that **proves it cannot see eval labels** before any LLM call runs. ml-researcher should adopt this as a hook — see [§ Anti-fabrication note](#anti-fabrication-the-mlr-bench-finding) below.
+The dummy-verifier pattern is the single most useful idea here: a precondition agent that **proves it cannot see eval labels** before any LLM call runs. ml-researcher should adopt this as a hook — see [§ Research-rigor mechanisms](#research-rigor-mechanisms) below.
 
 Headline result: o1-preview + AIDE = bronze in **16.9%** of competitions. For context, that's ~3× the linear-agent baseline.
 
@@ -68,17 +68,17 @@ ml-researcher's `critic` agent corresponds to this verifier role, but our curren
 
 The flagship variant `RD-Agent(Q)` is for quant trading research. Headline: *"<\$10 cost, ~2× ARR vs benchmark factor libraries with 70% fewer factors."* The architecture is a hypothesis → code → backtest → interpret loop with a **first-class hypothesis ledger** separate from the code repository.
 
-ml-researcher's `research/iteration_trace.md` already plays this role conceptually but is more general (it covers experiments, not hypotheses). Consider adding a `research/hypotheses.md` as a separate artifact, with each hypothesis ID linkable from `iteration_trace.md` entries.
+ml-researcher's `research/trial_trace.md` already plays this role conceptually but is more general (it covers experiments, not hypotheses). Consider adding a `research/hypotheses.md` as a separate artifact, with each hypothesis ID linkable from `trial_trace.md` entries.
 
 ### MLR-Bench — NeurIPS 2025
 
-Benchmark of 201 workshop-paper tasks across NeurIPS / ICLR / ICML, plus an `MLR-Judge` LLM rubric reviewer. The finding that matters for ml-researcher's positioning:
+Benchmark of 201 workshop-paper tasks across NeurIPS / ICLR / ICML, plus an `MLR-Judge` LLM rubric reviewer. The findings that matter for ml-researcher's positioning:
 
 > "current coding agents frequently (e.g., in 80% of the cases) produce fabricated or invalidated experimental results — posing a major barrier to scientific reliability."
 
 > "a primary weakness is their inability to propose technically sound methods … markedly low scores in Soundness."
 
-This is the single most important data point in the landscape. **80% fabrication is the wall ml-researcher exists to break.**
+ml-researcher reads this as empirical motivation: research rigor needs to be *load-bearing in the workflow itself*, not a review-time check. The mission framing is "help researchers do credible work," not "catch agents that cheat."
 
 ### PaperBench — OpenAI ICML 2025
 
@@ -92,15 +92,15 @@ First serious attempt at **RL-fine-tuning a 7B agent** on ML tasks: Exploration-
 
 We do **not** propose to fine-tune our own ML LLM (see [`12_knowledge_integration.md`](12_knowledge_integration.md) §1.8) — the field moves faster than fine-tunes can ship, and prompting + tools beats fine-tuning for this use case in the current evidence.
 
-## Anti-fabrication: the MLR-Bench finding
+## Research-rigor mechanisms
 
-If 80% of agent-produced experiment results are fabricated or invalidated, then **the central design challenge is not "smart enough" but "trustworthy enough"**. ml-researcher's defenses:
+The central design challenge is **making rigor cheap enough that researchers actually do it** — load-bearing guardrails that run inside the workflow, not a review pass tacked on at the end. ml-researcher's mechanisms:
 
-| Mechanism | Where it lives | Threat addressed |
+| Mechanism | Where it lives | Research-quality risk addressed |
 |---|---|---|
-| Test-set firewall hook | [`08_hooks.md`](08_hooks.md) #2 (lock test set during selection/tuning) | Test-set leakage |
+| Test-set lock during selection/tuning | [`08_hooks.md`](08_hooks.md) #2 | Test peeking that inflates evaluation |
 | Pre-flight checklist hook | [`08_hooks.md`](08_hooks.md) #3 | Wrong dataset format, wrong arguments, missing baseline |
-| Iteration trace + ledger | [`04_methodology.md`](04_methodology.md), [`06_tools.md`](06_tools.md) | Fabricated/inconsistent metrics |
+| Iteration trace + ledger | [`04_methodology.md`](04_methodology.md), [`06_tools.md`](06_tools.md) | Drift between reported metrics and what actually ran |
 | `critic` agent | [`05_agents.md`](05_agents.md) | Methodology drift, baseline missing |
 | Locked splits at init | [`03_project_structure.md`](03_project_structure.md) | Re-randomized splits hiding overfitting |
 | Result-consistency principle | [`04_methodology.md`](04_methodology.md) #6 | Mismatched figures vs reported metrics |
@@ -115,11 +115,13 @@ This is a stronger guarantee than a hook regex match. Tracked as a v0.2 candidat
 
 Three gaps are visible after this survey, and ml-researcher addresses each:
 
-1. **Anti-fabrication architecture as a first-class concern.** No surveyed agent (AIDE, AI-Scientist, MLE-Agent, AutoML-Agent, RD-Agent) bakes in a sysbox-style test-set firewall + dummy-verifier precondition. ml-researcher does — see [`04_methodology.md`](04_methodology.md) and [`08_hooks.md`](08_hooks.md).
+1. **Research-rigor mechanisms as load-bearing workflow components**, not a post-hoc review pass. No surveyed agent (AIDE, AI-Scientist, MLE-Agent, AutoML-Agent, RD-Agent) bakes in a test-set lock + baseline-mandatory + dummy-verifier precondition into the actual workflow. ml-researcher does — see [`04_methodology.md`](04_methodology.md) and [`08_hooks.md`](08_hooks.md).
 
 2. **Skill-file ML expertise + plan-time RAG, instead of either bare prompts or hand-written templates.** AIDE has nothing; AI-Scientist v1 has rigid templates; v2 has nothing; MLE-Agent has retrieval but no curated skills; AutoML-Agent buries knowledge in a LoRA. ml-researcher encodes methodology as skill files exposed via Skill / ToolSearch *and* does live ArXiv/PWC retrieval at plan formation — see [`12_knowledge_integration.md`](12_knowledge_integration.md).
 
-3. **An auditable solution tree spanning experiments AND text artifacts.** AIDE has a code tree; AI-Scientist v2 has an experiment-run tree; neither integrates a research-log / hypothesis ledger / human-readable rationale per node. ml-researcher's per-experiment `EXPxxx/README.md` + `iteration_trace.md` + `progress.md` triple, linked by experiment ID, is the integration nothing in the landscape offers.
+3. **A clean `literature` ↔ `modeler` split for the Selection phase.** Existing agents either fold "what techniques exist" and "what to actually try" into one ideation step (AI-Scientist v2, AIDE, MLE-Agent), or buy it via an opaque retrieval-augmented LoRA (AutoML-Agent). ml-researcher's separate `modeler` subagent owns the candidate matrix + rejection log + baseline pick in `research/model_selection.md`, while `literature` stays read-heavy. See [`05_agents.md`](05_agents.md).
+
+4. **An auditable solution tree spanning experiments AND text artifacts.** AIDE has a code tree; AI-Scientist v2 has an experiment-run tree; neither integrates a research-log / hypothesis ledger / human-readable rationale per node. ml-researcher's per-experiment `EXPxxx/README.md` + `trial_trace.md` + `progress.md` triple, linked by experiment ID, is the integration nothing in the landscape offers.
 
 ## What we explicitly do NOT do
 

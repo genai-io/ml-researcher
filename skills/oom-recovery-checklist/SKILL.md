@@ -30,7 +30,7 @@ gradient_accumulation_steps = 4
 # Effective batch = 16, peak memory ÷ 4
 ```
 
-Verify the effective batch is unchanged. If you can't keep it identical (e.g., it doesn't divide), document the change in `iteration_trace.md` — this is a recipe change.
+Verify the effective batch is unchanged. If you can't keep it identical (e.g., it doesn't divide), document the change in `trial_trace.md` — this is a recipe change.
 
 ## Step 2: Enable gradient checkpointing
 

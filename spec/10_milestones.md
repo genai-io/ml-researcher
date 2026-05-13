@@ -31,12 +31,13 @@ Exit: a project initialized with this prompt produces sensible, methodology-awar
 
 ## M3 — Subagents
 
-Five subagents, each as a markdown file in `agents/`.
+Six subagents, each as a markdown file in `agents/`.
 
 Tasks:
-- [ ] `agents/navigator.md` — top-level dispatcher, reads progress.md, advances L3
-- [ ] `agents/literature.md` — paper / dataset search subagent
-- [ ] `agents/experimenter.md` — L1 autoresearch-style loop runner
+- [ ] `agents/navigator.md` — top-level dispatcher, reads progress.md, advances the Research Loop
+- [ ] `agents/literature.md` — paper / dataset / citation-graph search; *what exists*
+- [ ] `agents/modeler.md` — candidate model matrix + rejection log; *what to actually try*
+- [ ] `agents/experimenter.md` — Train Loop: hypothesize → localize → edit → run → measure → keep/reset
 - [ ] `agents/analyst.md` — produces analysis_report, statistical comparisons
 - [ ] `agents/critic.md` — methodology audit (no leakage, baseline present, locked test set)
 
@@ -46,16 +47,13 @@ Exit: each subagent has a clear role description, tool subset, and example invoc
 
 Slash commands the user invokes inside the agent.
 
-Tasks:
-- [ ] `commands/phase.md` — show current phase + advance requirements
-- [ ] `commands/exp-new.md` — register experiment
-- [ ] `commands/exp-loop.md` — kick off L1 autoresearch loop
-- [ ] `commands/exp-list.md` — show ledger
-- [ ] `commands/exp-compare.md` — multi-experiment comparison with bootstrap CI
-- [ ] `commands/lit-search.md` — invoke literature subagent
-- [ ] `commands/checklist.md` — pre-flight check
-- [ ] `commands/critic.md` — invoke critic subagent
-- [ ] `commands/report.md` — draft analysis report
+Tasks (six command files, each with subcommands; prefixes align to loops):
+- [ ] `commands/research.md` — `phase [advance]`, `report draft|final` (Research Loop)
+- [ ] `commands/exp.md` — `new`, `list`, `compare`, `paper search|read|list` (Experiment Loop)
+- [ ] `commands/train.md` — `run` (Train Loop — autoresearch)
+- [ ] `commands/preflight.md` — pre-flight checklist (cross-layer)
+- [ ] `commands/audit.md` — methodology audit via `critic` (cross-layer)
+- [ ] `commands/sandbox.md` — toggle sandbox mode
 
 Note: there is no `init-mlresearch` slash command. Bootstrapping a project is `init.sh`'s job.
 
@@ -68,7 +66,7 @@ Skills follow the standard Anthropic Skills layout: each skill is its own direct
 Tasks:
 - [ ] **ML domain** — at least: `model-recommend/`, `medical-small-sample-transfer/`, `tabular-tabpfn-vs-xgboost/`, `oom-recovery-checklist/`, plus a few more covering vision/multimodal/NLP
 - [ ] **Experiment loop** — `exp-register/`, `exp-run/`, `metric-grep/`, `git-keep-or-reset/`, `ledger-append/`
-- [ ] **Methodology** — `phase-advance/`, `checklist-verify/`, `iteration-log/`, `bootstrap-ci/`, `delong-test/`, `train-monitor/`, `figure-render/`, `expect-mode/`
+- [ ] **Methodology** — `phase-advance/`, `checklist-verify/`, `trial-log/`, `bootstrap-ci/`, `delong-test/`, `train-monitor/`, `figure-render/`, `sandbox-mode/`
 
 Exit: each skill loads when its description triggers and successfully completes its recipe.
 
@@ -112,7 +110,7 @@ Replicate a small slice of rad-research's GBM project as a self-contained demo.
 
 Tasks:
 - [ ] `examples/gbm-tumor-purity/` produced by `init.sh "GBM tumor purity demo"` and pre-filled with synthetic data
-- [ ] Walkthrough README showing `data_understanding → research_goal → /exp-loop → /report` end to end
+- [ ] Walkthrough README showing `data_understanding → research_goal → /train run → /research report` end to end
 - [ ] Domain-specific `playbook.md` showing radiomics-flavored guidance
 
 Exit: a new user can clone `examples/gbm-tumor-purity` and produce a defensible `results/reports/final.md` in under an hour.

@@ -20,7 +20,7 @@ Recommend: random search for small grids; bayesian for >10 parameters; grid for 
 
 ## Per-model compute budget
 
-| Model | Max iterations | Wall-clock budget per run | Notes |
+| Model | Max trials | Wall-clock budget per run | Notes |
 |---|---|---|---|
 | `<model>` | `<n>` | `<duration>` | `<notes>` |
 
@@ -29,8 +29,8 @@ Recommend: random search for small grids; bayesian for >10 parameters; grid for 
 1. Use validation split only.
 2. Random seed fixed for reproducibility.
 3. Early stopping enabled where applicable.
-4. Each tuning iteration is registered as an experiment via `/exp-new` and tracked in `experiments/ledger.tsv`.
-5. The L1 loop (`/exp-loop`) automates this end-to-end.
+4. Each tuning direction is registered as a separate experiment via `/exp new` and tracked in `experiments/ledger.tsv`.
+5. The Train Loop (`/train run`) automates this end-to-end.
 
 ## Final candidates
 
@@ -43,8 +43,8 @@ After tuning, fill in:
 ## Stop conditions
 
 Stop tuning a model when:
-- Improvement plateau over 5+ consecutive iterations
-- Train metric improving but val degrading (overfitting; record in iteration_trace)
+- Improvement plateau over 5+ consecutive trials
+- Train metric improving but val degrading (overfitting; record in trial_trace)
 - Wall-clock budget exhausted
 
 ## Outcome

@@ -8,9 +8,9 @@ Hooks are the runtime's event-driven extensibility mechanism (Claude Code, gen-c
 
 | Event | Purpose |
 |---|---|
-| `UserPromptSubmit` | Surface the expect-mode banner when `.mlr-expect-mode` exists (otherwise no-op — phase/best/next-step live in `progress.md` and are read on demand) |
+| `UserPromptSubmit` | Surface the sandbox-mode banner when `.mlr-sandbox-mode` exists (otherwise no-op — phase/best/next-step live in `progress.md` and are read on demand) |
 | `PreToolUse` | Methodology guardrails: protect raw data, locked test set, baseline requirement, phase-advance gate |
-| `PostToolUse` | Audit trail: append iteration_trace stub after experiments |
+| `PostToolUse` | Audit trail: append trial_trace stub after experiments |
 | `Stop` | Stop-and-resume nudge: stderr reminder if `progress.md` is stale |
 
 ## Default hook set
@@ -74,7 +74,7 @@ The spec'd `if` field (`"if": "Write(data/raw/**)"`) is honored by gen-code but 
 
 `preflight.sh` is currently **soft**: it emits stderr warnings for missing items but exits 0 (does not block). Mechanical rules — baseline registered, `progress.md` present, no test-split refs in the active experiment dir — are delegated to `<CFG>/hooks/checks.sh` so the same rules drive `phase_gate.sh` and the `checklist-verify` skill. A future stricter version would exit 2 on hard violations.
 
-### 4. Auto-append iteration_trace stub after exp-run
+### 4. Auto-append trial_trace stub after exp-run
 
 ```json
 {
@@ -89,7 +89,7 @@ The spec'd `if` field (`"if": "Write(data/raw/**)"`) is honored by gen-code but 
 }
 ```
 
-`trace_append.sh` derives the experiment ID from the current branch (`mlr/exp/EXPxxx_*`) and appends a `[STUB — fill in]` block to `research/iteration_trace.md` with empty fields (Motivation, Change from parent, Results, Decision, …). The agent fills the stub from its own knowledge of what just ran — this script doesn't try to parse metrics out of tool output. Async, best-effort, never blocks.
+`trace_append.sh` derives the experiment ID from the current branch (`mlr/exp/EXPxxx_*`) and appends a `[STUB — fill in]` block to `research/trial_trace.md` with empty fields (Motivation, Change from parent, Results, Decision, …). The agent fills the stub from its own knowledge of what just ran — this script doesn't try to parse metrics out of tool output. Async, best-effort, never blocks.
 
 ### 5. Phase-advance gate
 
@@ -115,21 +115,21 @@ The spec'd `if` field (`"if": "Write(data/raw/**)"`) is honored by gen-code but 
   "UserPromptSubmit": [{
     "hooks": [{
       "type": "command",
-      "command": "bash <CFG>/hooks/expect_mode_banner.sh"
+      "command": "bash <CFG>/hooks/sandbox_mode_banner.sh"
     }]
   }]
 }
 ```
 
-When `.mlr-expect-mode` exists at project root, `expect_mode_banner.sh` injects:
+When `.mlr-sandbox-mode` exists at project root, `sandbox_mode_banner.sh` injects:
 
 ```xml
-<expect-mode rows="3">ACTIVE — mock/subset/fake results allowed; promotion to results/ blocked. See skills/expect-mode/SKILL.md.</expect-mode>
+<sandbox-mode rows="3">ACTIVE — mock/subset/fake results allowed; promotion to results/ blocked. See skills/sandbox-mode/SKILL.md.</sandbox-mode>
 ```
 
-`rows` counts `[EXPECT]` entries already in `experiments/ledger.tsv`. When the marker is absent, the hook exits silently — nothing is injected.
+`rows` counts `[SANDBOX]` entries already in `experiments/ledger.tsv`. When the marker is absent, the hook exits silently — nothing is injected.
 
-**Why narrow scope.** An earlier version of this hook also injected `<phase>`, `<current-best>`, and `<next-step>` extracted from `research/progress.md`. That was redundant: those facts live in `progress.md`, and the agent can read it whenever it actually needs them. Maintaining a parallel injected copy violates the single-source-of-truth principle and risks drift if the parsing regexes don't match the file format. The expect-mode flag is different — it's a hidden marker file the agent would not otherwise notice, and it flips every methodology rule (mocks allowed, promotion blocked), so a banner on every prompt is justified.
+**Why narrow scope.** An earlier version of this hook also injected `<phase>`, `<current-best>`, and `<next-step>` extracted from `research/progress.md`. That was redundant: those facts live in `progress.md`, and the agent can read it whenever it actually needs them. Maintaining a parallel injected copy violates the single-source-of-truth principle and risks drift if the parsing regexes don't match the file format. The sandbox-mode flag is different — it's a hidden marker file the agent would not otherwise notice, and it flips every methodology rule (mocks allowed, promotion blocked), so a banner on every prompt is justified.
 
 ### 7. Stop-and-resume reminder
 
@@ -158,9 +158,9 @@ The actual implementation lives in `<CFG>/hooks/` as plain bash:
 ├── preflight.sh
 ├── trace_append.sh
 ├── phase_gate.sh
-├── expect_mode_banner.sh
+├── sandbox_mode_banner.sh
 ├── stop_resume_check.sh
-└── checks.sh                # shared mechanical-checks library; sourced by preflight + phase_gate, also callable from /check
+└── checks.sh                # shared mechanical-checks library; sourced by preflight + phase_gate, also callable from /preflight
 ```
 
 `checks.sh` is invoked as `bash <CFG>/hooks/checks.sh <check-name>` and returns 0/1/2. Supported names: `progress-present`, `baseline-kept`, `no-test-refs-in-current-exp`. Adding a new mechanical rule means adding one function + one dispatcher case there; the skill and hook callers don't need to change.

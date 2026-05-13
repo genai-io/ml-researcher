@@ -19,22 +19,22 @@ ml-researcher operationalizes this thesis as a three-layer loop model.
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  L3 · Lifecycle Loop    (days/weeks)                              │
+│  Research Loop    (days/weeks)                                    │
 │   Data Understanding → Research Goal → Model Selection            │
 │   → Fine Tuning → Analysis Report → Goal Revision                 │
 │                                                                   │
-│   Records: research/, progress.md, iteration_trace.md             │
+│   Records: research/, progress.md, trial_trace.md             │
 │   Driver: human review at phase boundaries                        │
 │   Source: rad-research                                            │
 ├──────────────────────────────────────────────────────────────────┤
-│  L2 · Experiment Loop   (hours)                                   │
+│  Experiment Loop  (hours)                                         │
 │   Plan → Research → Sandbox dev → Submit job → Monitor → Decide   │
 │                                                                   │
 │   Records: experiments/EXPxxx/, papers/shortlist.md               │
 │   Driver: pre-flight checklist + monitoring discipline            │
 │   Source: huggingface/ml-intern                                   │
 ├──────────────────────────────────────────────────────────────────┤
-│  L1 · Iteration Loop    (minutes)                                 │
+│  Train Loop       (minutes)                                       │
 │   Edit code → Run → Grep metric → Keep (advance) or Reset         │
 │                                                                   │
 │   Records: git branch + experiments/ledger.tsv                    │
@@ -43,7 +43,7 @@ ml-researcher operationalizes this thesis as a three-layer loop model.
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-L1 is nested inside L2 is nested inside L3. The agent always knows which loop is active and applies the corresponding discipline. Crossing a layer boundary is itself a recorded decision.
+Train is nested inside Experiment is nested inside Research. The agent always knows which loop is active and applies the corresponding discipline. Crossing a layer boundary is itself a recorded decision.
 
 ## Why this layering matters
 
@@ -51,11 +51,11 @@ Each loop has different failure modes and therefore different guardrails:
 
 | Loop | Primary failure mode | Primary guardrail |
 |---|---|---|
-| L1 | running forever on a worse branch; flooding context with logs | git keep-or-reset; redirect-not-tee |
-| L2 | broken job that wastes hours; silent dataset substitution; OOM dead end | pre-flight checklist; OOM prescription ladder |
-| L3 | drift from original goal; using test set during selection; no baseline | phase-advance gate; locked test set; mandatory baseline |
+| Train | running forever on a worse branch; flooding context with logs | git keep-or-reset; redirect-not-tee |
+| Experiment | broken job that wastes hours; silent dataset substitution; OOM dead end | pre-flight checklist; OOM prescription ladder |
+| Research | drift from original goal; using test set during selection; no baseline | phase-advance gate; locked test set; mandatory baseline |
 
-A tool that only does L1 (autoresearch) cannot prevent L3 drift. A framework that only does L3 (rad-research) cannot run L1 overnight. ml-researcher encodes all three and the rules for crossing between them.
+A tool that only does the Train Loop (autoresearch) cannot prevent research drift. A framework that only does the Research Loop (rad-research) cannot run the Train Loop overnight. ml-researcher encodes all three and the rules for crossing between them.
 
 ## Project-centric, not user-centric
 

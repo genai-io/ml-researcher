@@ -1,6 +1,6 @@
 # Project Initialization Protocol
 
-How to instantiate `respec/` templates into a concrete project, and how to keep state, iteration trace, and directory documentation up to date afterwards.
+How to instantiate `respec/` templates into a concrete project, and how to keep state, trial trace, and directory documentation up to date afterwards.
 
 This file does NOT mandate fixed directory names beyond what `init.sh` already created. It does require: clear entry points, traceable references, and per-subdirectory state notes.
 
@@ -16,7 +16,7 @@ This file does NOT mandate fixed directory names beyond what `init.sh` already c
    - `research/research_goal.md`
    - `research/model_selection.md` (when entering Model Selection phase)
    - `research/fine_tuning.md` (when entering Fine Tuning phase)
-   - `research/iteration_trace.md` (continuously, after each experiment)
+   - `research/trial_trace.md` (continuously, after each experiment)
    - `research/analysis_report.md` (when entering Analysis phase)
    - `research/progress.md` (continuously, at every state change)
 
@@ -43,12 +43,12 @@ Layout `init.sh` creates:
     01_data_understanding.md  02_research_goal.md
     03_model_selection.md     04_fine_tuning.md
     05_analysis_report.md
-    iteration_trace.md  progress.md
+    trial_trace.md  progress.md
 
   research/
     progress.md  data_understanding.md  research_goal.md
     model_selection.md  fine_tuning.md  analysis_report.md
-    iteration_trace.md
+    trial_trace.md
 
   data/
     README.md  raw/  derived/  splits/
@@ -73,7 +73,7 @@ Whenever you continue work on this project:
 
 ```
 1. Read research/progress.md          # phase, current best, next step, blockers
-2. Read research/iteration_trace.md   # recent entries
+2. Read research/trial_trace.md   # recent entries
 3. Read latest analysis_report.md or current best experiment if needed
 4. Continue work
 ```
@@ -86,13 +86,13 @@ Root `README.md` is intentionally absent from this table. It is project descript
 
 | Change | Update required |
 |---|---|
-| New experiment | `research/iteration_trace.md`, `experiments/<exp_id>/README.md` |
-| Current best changed | `research/iteration_trace.md`, `research/progress.md`, possibly `research/analysis_report.md` and `results/README.md` |
+| New experiment | `research/trial_trace.md`, `experiments/<exp_id>/README.md` |
+| Current best changed | `research/trial_trace.md`, `research/progress.md`, possibly `research/analysis_report.md` and `results/README.md` |
 | Phase completion or blocker | `research/progress.md` |
 | Goal or metric change | `research/research_goal.md`, `research/progress.md` |
 | Data, label, or split change | `research/data_understanding.md`, `data/README.md`, possibly `research/progress.md` |
-| Model route change | `research/model_selection.md`, `research/iteration_trace.md`, possibly `research/progress.md` |
-| Tuning bound or final candidate change | `research/fine_tuning.md`, `research/iteration_trace.md` |
+| Model route change | `research/model_selection.md`, `research/trial_trace.md`, possibly `research/progress.md` |
+| Tuning bound or final candidate change | `research/fine_tuning.md`, `research/trial_trace.md` |
 | Final figures, metrics, or conclusion change | `research/analysis_report.md`, `results/README.md` |
 
 ## 5. Per-subdirectory README
@@ -120,7 +120,7 @@ When this README must be updated.
 Before ending a session, update at minimum:
 
 1. `research/progress.md` — current phase, last action, next step, blockers.
-2. `research/iteration_trace.md` — if any experiment was run.
+2. `research/trial_trace.md` — if any experiment was run.
 3. `experiments/<exp_id>/README.md` — if artifacts changed.
 4. `results/README.md` — if any artifact was promoted to conclusion-grade.
 
@@ -133,7 +133,7 @@ If incomplete, write a `Resume Notes` block in `progress.md` with: last action, 
 After every experiment, before starting another:
 
 - [ ] `experiments/<exp_id>/README.md` updated
-- [ ] `research/iteration_trace.md` entry added
+- [ ] `research/trial_trace.md` entry added
 - [ ] `research/progress.md` updated if state changed
 - [ ] `results/README.md` updated if any artifact promoted
 - [ ] `research/analysis_report.md` updated if conclusion changed

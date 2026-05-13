@@ -1,6 +1,6 @@
 ---
 name: checklist-verify
-description: Run a pre-flight checklist for a specific kind of action (pre-experiment, pre-phase-advance, pre-finalize). Returns PASS or a structured list of unmet items. Used by hooks and by /check.
+description: Run a pre-flight checklist for a specific kind of action (pre-experiment, pre-phase-advance, pre-finalize). Returns PASS or a structured list of unmet items. Used by hooks and by /preflight.
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
@@ -59,7 +59,7 @@ To fix:
 If all pass:
 
 ```
-Result: PASS — safe to /exp loop.
+Result: PASS — safe to /train run.
 ```
 
 # Behavior in hooks
@@ -69,7 +69,7 @@ When called by the `preflight` PreToolUse hook (matcher `experiment-run`), this 
 - exit 0 if PASS — tool execution proceeds
 - exit 2 if FAIL — tool blocked; structured remediation list printed to stderr
 
-When called manually via `/check`, the same logic but reported to the user.
+When called manually via `/preflight`, the same logic but reported to the user.
 
 # Source of truth for mechanical rules
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Single source for mechanical methodology checks shared by hooks and the
-# /check slash command (via the checklist-verify skill). Each check is
+# /preflight slash command (via the checklist-verify skill). Each check is
 # callable as `bash <CFG>/hooks/checks.sh <check-name>`.
 #
 # Convention:

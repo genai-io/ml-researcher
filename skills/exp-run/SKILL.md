@@ -1,6 +1,6 @@
 ---
 name: exp-run
-description: Execute the current experiment's train.py with output redirection and timeout. Always redirect to run.log; never tee. Used in the L1 loop and for one-off runs.
+description: Execute the current experiment's train.py with output redirection and timeout. Always redirect to run.log; never tee. Used in the Train Loop and for one-off runs.
 allowed-tools: Bash
 ---
 

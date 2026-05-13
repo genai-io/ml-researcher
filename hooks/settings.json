@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash __CFG__/hooks/expect_mode_banner.sh"
+            "command": "bash __CFG__/hooks/sandbox_mode_banner.sh"
           }
         ]
       }

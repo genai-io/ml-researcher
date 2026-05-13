@@ -1,6 +1,6 @@
 ---
 name: analyst
-description: Produces conclusion-grade artifacts — analysis_report.md, statistical tests (bootstrap CI, DeLong), final figures and tables. Spawn this for /report and finalization steps. Do NOT use for exploratory analysis during experiments.
+description: Produces conclusion-grade artifacts — analysis_report.md, statistical tests (bootstrap CI, DeLong), final figures and tables. Spawn this for /research report and finalization steps. Do NOT use for exploratory analysis during experiments.
 ---
 
 # Analyst

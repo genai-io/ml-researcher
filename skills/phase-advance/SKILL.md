@@ -1,6 +1,6 @@
 ---
 name: phase-advance
-description: Check whether the current L3 phase's gate requirements are met, and (if --confirm) advance to the next phase. Updates research/progress.md.
+description: Check whether the current research phase's gate requirements are met, and (if --confirm) advance to the next phase. Updates research/progress.md.
 allowed-tools: Read, Edit, Glob, Grep
 ---
 

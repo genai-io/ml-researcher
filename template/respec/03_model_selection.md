@@ -10,7 +10,7 @@ Every candidate in the matrix below must trace to at least one of: a paper from 
 |---|---|---|---|
 | `<paper / repo / registry>` | `<arxiv id / hf id / file>` | `<model name>` | `<one-line why this is a relevant precedent>` |
 
-Run `/lit search "<query>"` (which delegates to the `literature` subagent) and `model-recommend` (which queries `data/model_registry.yaml`) before populating this table and the matrix below. If a candidate has no precedent of any kind, justify why it deserves the slot anyway in the matrix's "Reason" column.
+Run `/exp paper search "<query>"` (which delegates to the `literature` subagent) and `model-recommend` (which queries `data/model_registry.yaml`) before populating this table and the matrix below. If a candidate has no precedent of any kind, justify why it deserves the slot anyway in the matrix's "Reason" column.
 
 ## Candidate matrix
 
@@ -50,6 +50,6 @@ For domain-specific guidance see `skills/<domain>/SKILL.md` (e.g. `skills/medica
 ## Outcome
 
 After selection, transition to Fine Tuning by:
-1. Running `/exp-new <baseline_or_first_shortlisted>` if not already.
+1. Running `/exp new <baseline_or_first_shortlisted>` if not already.
 2. Updating `research/progress.md` to phase = "Fine Tuning".
 3. Verifying `phase-advance` skill returns no missing requirements.

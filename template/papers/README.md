@@ -9,7 +9,7 @@ Literature shortlist and per-paper reading notes.
 | `shortlist.md` | One-line summaries of papers under active consideration |
 | `notes/<id>.md` | Per-paper reading notes (one file per arxiv ID) |
 
-The `literature` subagent populates these via `/lit-search` and related commands.
+The `literature` subagent populates these via `/exp paper search` and related commands.
 
 ## Conventions
 

@@ -34,15 +34,15 @@ skills/
 │
 ├── phase-advance/SKILL.md               # check gate requirements; advance phase
 ├── checklist-verify/SKILL.md            # pre-flight: baseline, dataset format, ...
-├── iteration-log/SKILL.md               # structured append to iteration_trace.md
+├── trial-log/SKILL.md               # structured append to trial_trace.md
 ├── bootstrap-ci/SKILL.md                # invoke scripts/bootstrap_ci.py
 ├── delong-test/SKILL.md                 # invoke scripts/delong_test.py
 ├── train-monitor/SKILL.md               # tail run.log; classify divergence/oom/nan
 ├── figure-render/SKILL.md               # invoke scripts/figure_render.py
-└── expect-mode/SKILL.md                 # pipeline-scaffolding sandbox rules
+└── sandbox-mode/SKILL.md                 # pipeline-scaffolding sandbox rules
 ```
 
-Skills group conceptually into three domains — ML knowledge (model-recommend, the *-transfer / *-finetune families, oom-recovery-checklist), experiment loop mechanics (exp-*, metric-grep, git-keep-or-reset, ledger-append), and methodology (phase-advance, checklist-verify, iteration-log, bootstrap-ci, delong-test, train-monitor, figure-render, expect-mode) — but the directory layout is flat because runtime skill discovery is one level deep.
+Skills group conceptually into three domains — ML knowledge (model-recommend, the *-transfer / *-finetune families, oom-recovery-checklist), experiment loop mechanics (exp-*, metric-grep, git-keep-or-reset, ledger-append), and methodology (phase-advance, checklist-verify, trial-log, bootstrap-ci, delong-test, train-monitor, figure-render, sandbox-mode) — but the directory layout is flat because runtime skill discovery is one level deep.
 
 ## Skill format
 
@@ -133,7 +133,7 @@ The earlier draft of this document listed `paper_search`, `dataset_inspect`, `mo
 | `git_keep_or_reset` | skill `git-keep-or-reset/SKILL.md` |
 | `ledger_append` | skill `ledger-append/SKILL.md` |
 | `phase_advance` | skill `phase-advance/SKILL.md` (slash command also exists) |
-| `iteration_log` | skill `iteration-log/SKILL.md` |
+| `trial_log` | skill `trial-log/SKILL.md` |
 | `checklist_verify` | skill `checklist-verify/SKILL.md` |
 | `bootstrap_ci` | skill `bootstrap-ci/SKILL.md` + `scripts/bootstrap_ci.py` |
 | `delong_test` | skill `delong-test/SKILL.md` + `scripts/delong_test.py` |

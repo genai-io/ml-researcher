@@ -11,7 +11,7 @@ Spec documents are numbered to suggest a reading order for newcomers:
 | [`01_overview.md`](01_overview.md) | Why ml-researcher exists; the three-layer loop model |
 | [`02_architecture.md`](02_architecture.md) | Zero-install model; `init.sh` is the only delivery; multi-runtime support |
 | [`03_project_structure.md`](03_project_structure.md) | Research project directory layout |
-| [`04_methodology.md`](04_methodology.md) | Lifecycle stages, records, guardrails |
+| [`04_methodology.md`](04_methodology.md) | Research phases, records, guardrails |
 | [`05_agents.md`](05_agents.md) | Built-in subagents and their roles |
 | [`06_tools.md`](06_tools.md) | Skills and Python scripts (no custom tools) |
 | [`07_commands.md`](07_commands.md) | Slash commands |
@@ -26,7 +26,7 @@ Spec documents are numbered to suggest a reading order for newcomers:
 
 This spec synthesizes three sources:
 
-- **[rad-research](https://github.com/yanmxa/rad-research)** — research methodology framework: lifecycle stages, `respec/` templates, iteration trace, methodology guardrails.
+- **[rad-research](https://github.com/yanmxa/rad-research)** — research methodology framework: lifecycle stages, `respec/` templates, trial trace, methodology guardrails.
 - **[huggingface/ml-intern](https://github.com/huggingface/ml-intern)** — ML-domain tooling: paper search, citation graph, dataset inspection, pre-flight checklists, OOM recovery.
 - **[karpathy/autoresearch](https://github.com/karpathy/autoresearch)** — overnight automation loop: edit → run → measure → keep-or-reset, with git as the ledger.
 
@@ -39,6 +39,6 @@ See [`01_overview.md`](01_overview.md) for how these are combined.
 | Delivery vehicle | `init.sh` curl-bash; **no plugin install, no binary, no package manager** |
 | Project config dir | `.claude/` (Claude Code default); `.gen/` for gen-code; `.codex/` for Codex |
 | Multi-runtime support | First-class: Claude Code + gen-code; best-effort: Codex |
-| L1 metric scope | Single primary metric; optional secondary metrics declared per project |
+| Train Loop metric scope | Single primary metric; optional secondary metrics declared per project |
 | `respec/` flavor | Domain-neutral default; project-level overrides via `playbook.md` |
 | Standalone binary | Deferred indefinitely; tracked in [`TODO.md`](TODO.md) |

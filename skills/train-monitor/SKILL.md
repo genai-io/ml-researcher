@@ -1,6 +1,6 @@
 ---
 name: train-monitor
-description: Stream-read a running experiment's run.log and classify lines into divergence / overfitting / OOM / NaN signals. Use when /exp loop or /exp run is in flight.
+description: Stream-read a running experiment's run.log and classify lines into divergence / overfitting / OOM / NaN signals. Use when /train run or /exp run is in flight.
 allowed-tools: Bash, Read
 ---
 
@@ -50,7 +50,7 @@ These are pattern-based and lossy. They surface concerning lines for the agent t
 
 - Never tail the entire log into the agent context. Surface only the matched lines + a one-sentence interpretation.
 - Don't kill the running process. Surface the alert; the agent or user decides.
-- Don't apply fixes silently. The agent applies them via `Edit` and `git commit` like any other iteration.
+- Don't apply fixes silently. The agent applies them via `Edit` and `git commit` like any other trial.
 
 # Adapted from
 

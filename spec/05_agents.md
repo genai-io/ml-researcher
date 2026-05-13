@@ -1,62 +1,83 @@
 # 05 — Built-in Agents
 
-ml-researcher ships five built-in agents. Each is defined in `internal/agents/<name>.md` (markdown with YAML frontmatter) and embedded into the binary at compile time. Projects may override or supplement them via `.mlr/agents/`.
+ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (markdown with YAML frontmatter) and copied into a project's `<config-dir>/agents/` by `init.sh`. Projects may override or supplement them via `<config-dir>/agents/`.
 
 ## Roster
 
 | Agent | Role | Active loop | Spawned by |
 |---|---|---|---|
-| `navigator` | Top-level dispatcher; identifies the active loop layer | L3 entry | default |
-| `literature` | Paper search, citation graph, dataset discovery | L2 sub-step | navigator, `/lit *` |
-| `experimenter` | Runs the L1 edit-run-measure-keep loop | L1 | navigator, `/exp loop` |
-| `analyst` | Produces analysis reports, statistical comparisons, figures | L3 stage 5 | navigator, `/report` |
+| `navigator` | Top-level dispatcher; identifies the active loop layer | Research entry | default |
+| `literature` | Paper search, citation graph, dataset discovery — *what exists* | Experiment sub-step | navigator, `/exp paper *` |
+| `modeler` | Builds the candidate model matrix + rejection log — *what to actually try* | Research: Model Selection | navigator |
+| `experimenter` | Runs the Train Loop: hypothesize → localize → edit → run → measure → keep/reset | Train | navigator, `/train run` |
+| `analyst` | Produces analysis reports, statistical comparisons, figures | Research: Analysis Report | navigator, `/research report` |
 | `critic` | Enforces methodology guardrails | cross-layer | hooks; on demand |
+
+`literature` and `modeler` split the Model Selection workload: `literature` stays read-heavy (papers, citation graphs, datasets), `modeler` owns the candidate matrix + rejection log in `research/model_selection.md`. Rationale and landscape comparison live in [`11_related_projects.md`](11_related_projects.md#gaps-in-the-landscape-that-ml-researcher-uniquely-fills).
 
 ## navigator
 
-**Role**: Default conversation agent. Reads `research/progress.md` to determine the active phase and dispatches to specialists. Owns L3-level decisions like phase transitions.
+**Role**: Default conversation agent. Reads `research/progress.md` to determine the active phase and dispatches to specialists. Owns Research Loop-level decisions like phase transitions.
 
-**Tools**: full set inherited from gen-code, plus `phase_advance`, `iteration_log`.
+**Tools**: full set inherited from gen-code, plus `phase_advance`, `trial_log`.
 
 **System prompt fragment** (illustrative; see `internal/prompts/`):
 
-> You are the entry agent for an ml-researcher session. Read `research/progress.md` first to know the current phase. Your job is to advance the project at the L3 timescale: data → goal → selection → tuning → report → revision. Delegate L2 work (literature) and L1 work (experiments) to specialist agents via the `Agent` tool. Do not run experiments yourself; spawn `experimenter`.
+> You are the entry agent for an ml-researcher session. Read `research/progress.md` first to know the current phase. Your job is to advance the project at the Research Loop timescale: data → goal → selection → tuning → report → revision. Delegate Experiment-level work (literature) and Train Loop-level work (experiments) to specialist agents via the `Agent` tool. Do not run experiments yourself; spawn `experimenter`.
 
 ## literature
 
-**Role**: All paper / dataset / external-knowledge research. Spawned as a subagent so its read-heavy work doesn't pollute the main context.
+**Role**: All paper / dataset / external-knowledge research. Spawned as a subagent so its read-heavy work doesn't pollute the main context. **Scope ends at "what exists"** — converting the survey into a concrete shortlist of models to try is `modeler`'s job.
 
 **Tools**:
-- `paper_search`, `paper_read`, `citation_graph` — see [`06_tools.md`](06_tools.md)
-- `dataset_inspect`
+- `paper-search`, `paper-read`, `citation-graph` — see [`06_tools.md`](06_tools.md)
+- `dataset-inspect`
 - `WebSearch`, `WebFetch`
 - `Read`, `Write` (writes to `papers/notes/` and `papers/shortlist.md` only)
 
 **System prompt fragment**:
 
-> You are a literature subagent. Your output is a shortlist of papers and datasets relevant to the user's research question, with extracted methodology snippets. Read methodology sections, not abstracts. When recommending a paper, include: arxiv ID, year, what it claims, what method it uses, what dataset it uses, and your one-line take on relevance. Append to `papers/shortlist.md`; never overwrite existing entries.
+> You are a literature subagent. Your output is a shortlist of papers and datasets relevant to the user's research question, with extracted methodology snippets. Read methodology sections, not abstracts. When recommending a paper, include: arxiv ID, year, what it claims, what method it uses, what dataset it uses, and your one-line take on relevance. Append to `papers/shortlist.md`; never overwrite existing entries. If the user asks "what should I actually run", hand back to navigator — `modeler` builds candidate matrices, not you.
+
+## modeler
+
+**Role**: Convert the technique survey (from `literature`) + the model registry into a concrete candidate matrix and rejection log in `research/model_selection.md`. Active during the Model Selection phase. Recommends the one specific baseline that gets registered as `EXP001-baseline`.
+
+**Tools**:
+- `model-recommend` (primary — reads `data/model_registry.yaml`)
+- `dataset-inspect` (verify the data side of every candidate)
+- `paper-search`, `paper-read` (gap-fill when the registry doesn't cover the task)
+- `WebSearch`, `WebFetch` (paperswithcode SOTA tables, HF leaderboards, timm results)
+- `Read`, `Write` (writes only to `research/model_selection.md`)
+
+**System prompt fragment**:
+
+> You are the modeler. Your output is a pinned candidate matrix in `research/model_selection.md`: 3-10 models with task fit, data fit, license, starting hyperparameters, expected pitfalls, reference implementation link, and `last_verified` date — plus a rejection log explaining what you ruled out and why. Always start with `model-recommend` against the registry; only use retrieval (`paper-search`, web search) when the registry has gaps. Pin checkpoint revisions (`bert-base-uncased@86b5e08`, not `bert-base-uncased`). End with one recommended baseline — the simplest defensible choice in the matrix.
 
 ## experimenter
 
-**Role**: Runs the L1 loop. Edits `train.py` (or equivalent), runs it, grep the metric, decides keep-or-reset.
+**Role**: Runs the Train Loop. Edits `train.py` (or equivalent), runs it, greps the metric, decides keep-or-reset. The autoresearch primitive is preserved verbatim; two lightweight additions turn random search into disciplined trials: a one-line **hypothesis** per trial (conditioned on the last few ledger rows) and **block localization** (edit one identified block, not the whole file).
 
 **Tools**:
 - `Edit`, `Bash` (sandboxed to current `experiments/EXPxxx/`)
-- `experiment_register`, `experiment_run`
-- `metric_grep`, `git_keep_or_reset`, `ledger_append`
+- `experiment-register`, `experiment-run`
+- `metric-grep`, `git-keep-or-reset`, `ledger-append`
+- `trial-log`
 
-**System prompt fragment** (drawn directly from autoresearch's `program.md`):
+**System prompt fragment** (extends autoresearch's `program.md` with hypothesis + localization steps):
 
-> You are running an L1 iteration loop for a registered experiment. The loop is:
+> You are running the Train Loop inside a registered experiment. The loop is:
 > 1. Inspect git state.
-> 2. Edit `train.py` with one experimental change.
-> 3. `git commit` with a one-line summary.
-> 4. Run `experiment_run` with a fixed time budget. Redirect output to `run.log`; do NOT tee or print.
-> 5. `metric_grep` the primary metric.
-> 6. If improved: `git_keep_or_reset keep` and `ledger_append status=keep`.
-> 7. If worse, equal, or crashed: `git_keep_or_reset reset` and `ledger_append status=discard`.
-> 8. Repeat until budget exhausted or human interrupt.
-> Do not stop to ask if you should continue. Do not pause for confirmation. Run until interrupted.
+> 2. Read the last 3 ledger rows + trial_trace; state a one-line hypothesis: "expect change X to improve metric M because Y." Append to the trial log stub.
+> 3. Localize: identify the *single* code block in `train.py` most likely to drive the next improvement, and edit only that block.
+> 4. `git commit` with a one-line summary tied to the hypothesis.
+> 5. Run `experiment-run` with a fixed time budget. Redirect output to `run.log`; do NOT tee or print.
+> 6. `metric-grep` the primary metric.
+> 7. If improved: `git-keep-or-reset keep` and `ledger-append status=keep`.
+> 8. If worse, equal, or crashed: `git-keep-or-reset reset` and `ledger-append status=discard|crash`.
+> 9. Record outcome-vs-hypothesis in `trial_trace.md`.
+> 10. Repeat until budget exhausted or human interrupt.
+> Do not stop to ask if you should continue. Do not pause for confirmation. Run until interrupted. When the metric plateaus for 5+ trials and `papers/shortlist.md` is thin, hand back to navigator for a focused `literature`/`modeler` invocation rather than doing literature work yourself.
 
 ## analyst
 
@@ -91,13 +112,14 @@ ml-researcher ships five built-in agents. Each is defined in `internal/agents/<n
 
 ```
 navigator
-  ├── Agent literature  ── for any /lit task or paper/dataset question
-  ├── Agent experimenter ── for /exp loop, /exp run, multi-iteration optimization
-  ├── Agent analyst      ── for /report or finalization
-  └── (hook-triggered) Agent critic ── before phase_advance, before commit on protected paths
+  ├── Agent literature   ── /exp paper task; any paper/dataset/technique survey question
+  ├── Agent modeler      ── Model Selection phase; "what should we actually try?"
+  ├── Agent experimenter ── /train run, /exp run, multi-trial optimization
+  ├── Agent analyst      ── /research report or finalization
+  └── (hook-triggered) Agent critic ── before phase-advance, before commit on protected paths
 ```
 
-A subagent's session is forked from navigator's project context (same `.mlr/`, same project files). It does not inherit conversation history unless explicitly forked.
+A subagent's session is forked from navigator's project context (same `<config-dir>/`, same project files). It does not inherit conversation history unless explicitly forked.
 
 ## Agent overrides at project level
 

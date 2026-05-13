@@ -39,9 +39,9 @@ gbm-tumor-purity/
 
 # Start the agent
 cd gbm-tumor-purity && claude
-> /phase                      # see what's needed to advance
-> /exp-new baseline-logistic
-> /lit-search "small-sample radiomics"
+> /research phase                      # see what's needed to advance
+> /exp new baseline-logistic
+> /exp paper search "small-sample radiomics"
 ```
 
 No global plugin install. No `~/.claude/plugins/` dependency. The project's `.claude/` directory is the entire runtime config.
@@ -55,8 +55,8 @@ ml-researcher/
 ├── spec/                         # design docs (this directory) — for contributors and AI reading the design
 ├── prompts/
 │   └── ml_researcher.md          # written to <project>/CLAUDE.md by init.sh
-├── agents/                       # 5 subagents
-├── skills/                       # ~14 skills
+├── agents/                       # 6 subagents
+├── skills/                       # ~17 skills
 ├── commands/                     # slash commands (NOT including init — that's bash)
 ├── hooks/                        # hook config + helper scripts
 ├── scripts/                      # Python helpers (bootstrap_ci, delong_test, ...)
@@ -159,9 +159,9 @@ cat <<EOF
 Next:
   cd $DEST
   $RUNTIME
-  > /phase
-  > /lit-search "<query>"
-  > /exp-new <name>
+  > /research phase
+  > /exp paper search "<query>"
+  > /exp new <name>
 EOF
 ```
 
@@ -179,7 +179,7 @@ The last property is intentional: a research project's methodology version shoul
 
 ## What `spec/` is
 
-`spec/` (this directory) is **design documentation for ml-researcher itself**. It describes why the methodology has the shape it does, what the lifecycle looks like, and how the runtime files are organized. It is read by:
+`spec/` (this directory) is **design documentation for ml-researcher itself**. It describes why the methodology has the shape it does, what the research project flow looks like, and how the runtime files are organized. It is read by:
 
 - contributors to ml-researcher
 - AI agents loading the design intent

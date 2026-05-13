@@ -15,11 +15,11 @@ exp_id    commit    primary_metric    metric_value    status    description    s
 | Column | Type | Notes |
 |---|---|---|
 | `exp_id` | string | e.g., `EXP003_combined-linear-svm` |
-| `commit` | string | short sha of the iteration's commit (or "—" for register/crash before commit) |
+| `commit` | string | short sha of the trial's commit (or "—" for register/crash before commit) |
 | `primary_metric` | string | name of the primary metric, e.g., `val_auc` |
-| `metric_value` | float or "—" | the metric on this iteration; "—" if crash |
+| `metric_value` | float or "—" | the metric on this trial; "—" if crash |
 | `status` | string | `registered` \| `keep` \| `discard` \| `crash` |
-| `description` | string | one-line summary of what changed in this iteration |
+| `description` | string | one-line summary of what changed in this trial |
 | `secondary_metrics_json` | string | JSON dict of secondary metrics; "{}" if none |
 
 # Steps
@@ -43,7 +43,7 @@ exp_id    commit    primary_metric    metric_value    status    description    s
      >> experiments/ledger.tsv
    ```
 
-4. **Do not commit ledger.tsv**. It's deliberately untracked (or in `.gitignore`) so each iteration doesn't pollute the experiment branch's git history. If the user wants ledger versioning, they can `git add` periodically.
+4. **Do not commit ledger.tsv**. It's deliberately untracked (or in `.gitignore`) so each trial doesn't pollute the experiment branch's git history. If the user wants ledger versioning, they can `git add` periodically.
 
 # Header
 
@@ -57,7 +57,7 @@ Note the literal tabs.
 
 # Description discipline
 
-The description should answer "what changed in this iteration?" in one line. Examples:
+The description should answer "what changed in this trial?" in one line. Examples:
 
 - `"Lowered LR to 5e-5 from 1e-4"`
 - `"Added gradient checkpointing to fit batch=32 on A10G"`

@@ -2,11 +2,11 @@
 
 The methodology is adapted from [rad-research's `respec/`](https://github.com/yanmxa/rad-research/tree/main/respec) with domain-specific terms (radiomics, DeLong, etc.) abstracted out.
 
-## The fabrication problem
+## Why these guardrails
 
-[MLR-Bench (NeurIPS 2025)](https://arxiv.org/abs/2505.19955) reports that *"current coding agents frequently (e.g., in 80% of the cases) produce fabricated or invalidated experimental results — posing a major barrier to scientific reliability."* This is the wall ml-researcher exists to break.
+The methodology below is not academic ceremony. Every principle, gate, and hook is research-hygiene aimed at a specific failure mode that degrades evidence quality: test-set leakage that inflates reported metrics, missing baselines that make "improvement" unfalsifiable, figures that don't match the run that produced them, silent dataset substitutions, scope-creeping fixes that quietly change the research claim. Catching these *during* the work is cheaper than discovering them in review.
 
-The methodology below is not academic ceremony. Every principle, gate, and hook is targeted at a specific failure mode that produces fabricated results in the wild: test-set leakage, missing baselines, mismatched figures vs metrics, silent dataset substitution, scope-creeping fixes that change the research claim. See [`11_related_projects.md`](11_related_projects.md) for the landscape survey and the cross-reference of mechanisms to threats.
+[MLR-Bench (NeurIPS 2025)](https://arxiv.org/abs/2505.19955) provides empirical motivation: it reports that current coding agents produce invalidated experimental results in a large fraction of cases. ml-researcher reads that as evidence that **research rigor needs to be load-bearing in the workflow itself**, not relegated to a post-hoc review pass. See [`11_related_projects.md`](11_related_projects.md) for the landscape survey and the cross-reference of mechanisms to research-quality risks.
 
 ## Core principles
 
@@ -18,12 +18,12 @@ These are enforced by the `critic` agent and by hooks. Violations should be visi
 4. **Baseline mandatory** — every claim of improvement is relative to a registered baseline.
 5. **Experiment traceability** — every experiment records motivation, change diff, data version, parameters, results, figures, and accept/reject decision.
 6. **Result consistency** — report, figures, prediction files, model files, and summary text come from the same experiment artifact.
-7. **No fabricated results** — mocks, simulated labels, label corrections, sensitivity analyses, and exploratory experiments must be labeled as such.
+7. **Label exploratory artifacts** — mocks, simulated labels, subset/dev runs, sensitivity analyses, and pipeline-scaffolding experiments must be tagged as such (e.g., `[SANDBOX]` in `sandbox-mode`); they may inform engineering but must not be promoted to `results/` or cited as evidence.
 8. **Simple-first** — under sample-size constraints, prefer robust, interpretable, calibrated models; complex models must justify their gain.
 9. **Stoppable** — when added complexity only improves train/CV but degrades validation/test, record the overfitting risk and stop the direction.
 10. **Independent progress record** — `progress.md` (or equivalent) records current phase, next step, blockers — separately from the methodology templates.
 
-## Lifecycle stages (L3)
+## Research phases
 
 ```
 Data Understanding
@@ -46,14 +46,14 @@ Data Understanding
 
 ## Cross-cutting records
 
-`iteration_trace.md` and `progress.md` are not lifecycle stages. They are records that span all stages.
+`trial_trace.md` and `progress.md` are not lifecycle stages. They are records that span all stages.
 
 | Record | Scope | Answers | Updated when |
 |---|---|---|---|
-| `iteration_trace.md` | Experiment audit | Why was each experiment run? what changed? what happened? accepted? | After every meaningful experiment, tuning, sensitivity, or finalization |
+| `trial_trace.md` | Experiment audit | Why was each experiment run? what changed? what happened? accepted? | After every meaningful experiment, tuning, sensitivity, or finalization |
 | `progress.md` | Project state | Where are we; what's the current best; what's next; what's blocking? | When a phase completes, current best changes, conclusion changes, or a blocker appears |
 
-`progress.md` references `iteration_trace.md` by experiment ID; it does not duplicate experiment detail.
+`progress.md` references `trial_trace.md` by experiment ID; it does not duplicate experiment detail.
 
 ## Stage transitions (gates)
 
@@ -107,7 +107,7 @@ The default `respec/` is **domain-neutral**. Domain-specific guidance lives in `
 Before ending a work session, the agent must update at minimum:
 
 1. `research/progress.md` — phase, last action, next step, blockers.
-2. `research/iteration_trace.md` — if any experiment was run.
+2. `research/trial_trace.md` — if any experiment was run.
 3. `experiments/EXPxxx/README.md` — if artifacts changed.
 4. `results/README.md` — if any artifact was promoted to conclusion-grade.
 
