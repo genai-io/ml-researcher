@@ -1,24 +1,18 @@
 ---
 name: figure-render
-description: Render a publication-quality figure via scripts/figure_render.py. Supports ROC, calibration, confusion, learning-curve, and comparison-bar plots.
-allowed-tools: Bash, Read
+description: Render a publication-quality figure via scripts/figure_render.py. Supports ROC, calibration, confusion, learning-curve, and comparison-bar plots. Per-kind input/output table in references/kinds.md.
+allowed-tools: Bash Read
 ---
 
-# Supported figure kinds
+# When to use
 
-| `kind` | Required inputs | Output |
-|---|---|---|
-| `roc` | predictions, labels, model_name(s) | ROC curves with CI band |
-| `calibration` | predictions, labels | Reliability diagram + Brier in caption |
-| `confusion` | predictions, labels, threshold | Row-normalized confusion matrix with counts |
-| `learning_curve` | run.log | Train/val metric vs epoch/step |
-| `comparison_bar` | metrics for ≥2 experiments | Bar chart with CI error bars |
+Produce conclusion-grade figures for the analysis report, or exploratory figures inside an experiment directory. Analyst is the main caller; experimenter may use it for learning-curve diagnostics.
 
 # Steps
 
-1. **Determine `kind`** from the user's request or context.
+1. **Determine `kind`** from the user's request or context. Supported: `roc`, `calibration`, `confusion`, `learning_curve`, `comparison_bar`. Full input/output per kind: `references/kinds.md`.
 
-2. **Build the command** with appropriate inputs:
+2. **Build the command**:
 
    ```bash
    python scripts/figure_render.py \
@@ -40,29 +34,31 @@ allowed-tools: Bash, Read
 - Sans-serif font (matplotlib default works).
 - Color-blind-friendly palette: `tab10` or `viridis`.
 - Error bars are CIs (computed via bootstrap), not std-dev.
-- Title: descriptive but concise, e.g., "ROC, validation set, n=54".
+- Title: descriptive but concise — `"ROC, validation set, n=54"`.
 - Legend: short labels (model names without paths).
-- For comparison_bar: order experiments by metric value descending.
+- For `comparison_bar`: order experiments by metric value descending.
 
-# Script contract
-
-`scripts/figure_render.py` accepts (per kind, varies):
-
-| Flag | Meaning |
-|---|---|
-| `--kind <name>` | one of the listed kinds |
-| `--preds <path>` (repeatable) | predictions CSV(s) |
-| `--labels <path>` | labels CSV |
-| `--names <name>` (repeatable) | display names |
-| `--metric <name>` | for comparison_bar |
-| `--threshold <f>` | for confusion |
-| `--out <path>` | output PNG path |
-
-The script may grow flags per `kind`; consult its `--help`.
-
-# When figures live where
+# Where figures live
 
 - `experiments/EXPxxx_*/figures/` — exploratory figures specific to one experiment.
 - `results/figures/` — only conclusion-grade figures referenced in the analysis report.
 
 Don't pollute `results/` with WIP figures.
+
+# Script contract
+
+`scripts/figure_render.py` accepts shared and per-kind flags. The script may grow flags per `kind`; consult its `--help`.
+
+Common flags:
+
+| Flag | Meaning |
+|---|---|
+| `--kind <name>` | one of the supported kinds |
+| `--preds <path>` (repeatable) | predictions CSV(s) |
+| `--labels <path>` | labels CSV |
+| `--names <name>` (repeatable) | display names |
+| `--out <path>` | output PNG path |
+
+# Related
+
+Pairs with [[calibration-check]] for `--kind calibration` (calibration-check also computes the metric; figure-render only renders). The analyst agent calls figure-render for every figure in `analysis_report.md`.

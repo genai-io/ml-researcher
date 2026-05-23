@@ -1,21 +1,21 @@
 ---
 name: checklist-verify
 description: Run a pre-flight checklist for a specific kind of action (pre-experiment, pre-phase-advance, pre-finalize). Returns PASS or a structured list of unmet items. Used by hooks and by /preflight.
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Read Glob Grep Bash
 ---
 
 # Checklists by kind
 
 ## kind=pre-experiment
 
-Before any `experiment-run` invocation:
+Before any `exp-run` invocation:
 
 | # | Check | How to verify |
 |---|---|---|
 | 1 | Reference implementation cited this turn | grep recent conversation context for arxiv/github URLs |
 | 2 | `dataset-inspect` was called | check whether the relevant dataset's path appears in recent tool outputs |
 | 3 | Output destination set | look in `experiments/EXPxxx/config.yaml` for `output_dir`, `save_strategy`, `push_to_hub`, etc. |
-| 4 | Timeout justified | the experiment-run skill's budget is ≥ 2 × estimated runtime |
+| 4 | Timeout justified | the exp-run skill's budget is ≥ 2 × estimated runtime |
 | 5 | Run name follows convention | `<task>_<model>_lr<lr>_bs<bs>_<short-tag>` in the run name or experiment name |
 | 6 | Baseline exists if claiming improvement | `bash <CFG>/hooks/checks.sh baseline-kept` (rule: row in `experiments/ledger.tsv` with `description` containing "baseline" AND `status=keep`) |
 
@@ -64,7 +64,7 @@ Result: PASS — safe to /train run.
 
 # Behavior in hooks
 
-When called by the `preflight` PreToolUse hook (matcher `experiment-run`), this skill returns:
+When called by the `preflight` PreToolUse hook (matcher `exp-run`), this skill returns:
 
 - exit 0 if PASS — tool execution proceeds
 - exit 2 if FAIL — tool blocked; structured remediation list printed to stderr

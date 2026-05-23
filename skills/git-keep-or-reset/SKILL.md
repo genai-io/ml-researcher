@@ -42,7 +42,7 @@ echo "→ reset (crash) to $(git rev-parse --short HEAD)"
 # Hard rules
 
 - Only operate on `mlr/exp/EXP*_*` branches. If on `main` or any other branch, refuse.
-- Never `git reset --hard` past the experiment-register commit. If a reset would land on `main`, refuse and tell the user.
+- Never `git reset --hard` past the exp-register commit. If a reset would land on `main`, refuse and tell the user.
 - The branch's tip after the loop ends represents the "best so far" within the experiment. The ledger.tsv records the full history of attempts.
 
 # Why git-as-ledger

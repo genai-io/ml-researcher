@@ -1,7 +1,7 @@
 ---
 name: model-recommend
 description: Recommend ML models from data/model_registry.yaml given a task, n_samples, modality, and constraints. Returns 5-10 candidates with pros/cons, hyperparameters, and last-verified date. Use whenever the user asks "what model should I use" or you need to propose an architecture.
-allowed-tools: Read, Grep
+allowed-tools: Read Grep
 ---
 
 # Steps

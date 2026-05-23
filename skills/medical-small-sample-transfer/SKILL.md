@@ -1,6 +1,6 @@
 ---
 name: medical-small-sample-transfer
-description: Recipe for medical imaging projects with 50-500 labeled cases. Covers patient-level splits, transfer-learning pretraining choices (RadDINO, MedSigLIP, BiomedCLIP, MedGemma), feature fusion with tabular clinical data, calibration, and small-sample reporting (DeLong, bootstrap CI). Use when the project is medical imaging with realistic small-N constraints.
+description: Recipe for medical imaging projects with 50-500 labeled cases. Routes to detailed sub-references for pretraining choice, patient-level splits, clinical+imaging fusion, and small-sample reporting. Use when the project is medical imaging with realistic small-N constraints.
 ---
 
 # When to use
@@ -8,92 +8,36 @@ description: Recipe for medical imaging projects with 50-500 labeled cases. Cove
 Medical imaging projects with:
 - ≤ 500 labeled cases per class
 - Patient-level (not slice-level) splits required
-- Clinical/molecular data alongside imaging
+- Clinical/molecular tabular data alongside imaging
 - Need for calibrated probabilities (clinical decision support)
 
 This is the rad-research canonical regime.
 
-# Pretraining choice
+# Decision tree
 
-For radiology imaging, prefer in this order:
+1. **Picking pretraining** (radiology, pathology, derma, ophth, generic) → `references/pretraining.md`
+2. **Setting up splits** (patient-level, locked, GroupShuffleSplit pattern) → `references/splits.md`
+3. **Combining clinical + imaging** (late / mid / early fusion) → `references/fusion.md`
+4. **Writing the report** (AUC+CI, calibration, DeLong, Limits) → `references/reporting.md`
 
-1. **RadDINO** (`microsoft/rad-dino`) — DINOv2-style pretraining on chest X-ray and similar; strongest small-sample feature extractor for radiology. License: research-only (check for clinical use).
-2. **MedSigLIP** (`google/medsiglip-...`) — multimodal medical CLIP-style. Good for image-text retrieval and classification.
-3. **BiomedCLIP** (`microsoft/BiomedCLIP-PubMedBERT_256-vit_base_patch16_224`) — CLIP-style on PubMed images. Older but well-tested.
-4. **MedGemma-4B / 27B** (`google/medgemma-...`, July 2025) — multimodal medical foundation models. Good for QA-style tasks.
-5. **DINOv2 / DINOv3** (`facebook/dinov2-large` etc.) — generic foundation that often beats medical-specific on linear probe with very small N.
-6. **nnU-Net v2** — for segmentation tasks specifically (not classification).
+# Headline recipe (most projects start here)
 
-For non-radiology medical (pathology, dermatology, ophthalmology), substitute the domain's foundation: PathDINO, DERM-VFM, RetinaFM, etc. (verify via paper-search).
+1. Encoder: **RadDINO** for radiology; domain-specific foundation otherwise (see `pretraining.md`).
+2. Splits: patient-level GroupShuffleSplit, locked at init (see `splits.md`).
+3. Fusion: late fusion of `clinical_score` + `rad_score` via small logistic (see `fusion.md`).
+4. Tabular leg: **TabPFNv2** for n ≤ 10k (see [[tabular-tabpfn-vs-xgboost]]).
+5. Report with AUC + bootstrap CI + Brier + DeLong (`bootstrap-ci`, `calibration-check`, `delong-test`).
 
-# Splits — patient-level, locked at init
+# Hard rules
 
-```python
-# Wrong: stratified random split on slices/images
-# Right: stratified random split on patient IDs, then expand to slices
+- **Patient-level splits, always.** Slice-level random splits leak patients across train/test — most common small-sample bug.
+- **Test set locked at project init.** Re-randomizing during experiments is a methodology violation; `test_set_guard.sh` hook also blocks reads during selection/tuning.
+- **TabPFNv2 first for tabular** when n ≤ 10k. Do NOT default to deep nets.
+- **Report calibration.** Brier alone is not enough — include reliability diagram via `calibration-check`.
+- **Honest Limits section** in the report: small N, single-center, retrospective, label quality, calibration drift.
 
-from sklearn.model_selection import GroupShuffleSplit
-splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-train_idx, test_idx = next(splitter.split(X, y, groups=patient_ids))
-```
+# Related skills
 
-Lock the test set at project init. Do not re-randomize splits during experiments. The hook in `.claude/hooks/test_set_guard.sh` will block test-set reads during selection/tuning phases.
-
-# Feature fusion (clinical + imaging)
-
-Three regimes work for small N:
-
-1. **Late fusion of scores** (rad-research's canonical pattern):
-   - Train clinical-only model → produces `clinical_score`
-   - Train imaging-only model → produces `rad_score`
-   - Train a small linear/logistic on `(clinical_score, rad_score)` → final
-   - Pros: each component validates separately; small overfitting risk
-   - Cons: may underfit if clinical and imaging interact strongly
-
-2. **Mid fusion** (concatenate features):
-   - Extract imaging features (e.g., from RadDINO penultimate layer)
-   - Concatenate with normalized clinical features
-   - Feed to a small MLP or TabPFN (TabPFNv2 handles up to ~10K rows × 500 features beautifully)
-   - Pros: captures interactions; few hyperparameters
-   - Cons: requires more samples
-
-3. **Early fusion** — only viable with much larger samples (≥ 1k). Skip for small N.
-
-# Models for small-sample tabular (clinical/molecular features)
-
-In order:
-1. **TabPFNv2** (Nature 2024) — best up to ~10K rows; needs no tuning; calibrated by default.
-2. **Logistic regression with L1/L2** — interpretable; works at n=50.
-3. **CatBoost / XGBoost / LightGBM** — strong if n ≥ 500 with categorical features.
-4. **TabICL** (2025) — top median rank in tabular benchmarks; in-context.
-
-Avoid deep neural nets for tabular small-sample. They lose to TabPFN consistently.
-
-# Reporting — what's required
-
-For a defensible small-N medical paper:
-
-- **AUC** with **bootstrap 95% CI** (not just point estimate).
-- **Sensitivity / Specificity** at a clinically motivated threshold (NOT the threshold that maximizes accuracy on test).
-- **Calibration** — Brier score + reliability diagram.
-- **DeLong's test** for AUC comparisons.
-- **Confidence interval overlap** for accuracy/F1 comparisons.
-- Honest **limits** section: small N, single-center, retrospective, label quality, calibration drift.
-
-Use the `bootstrap-ci` and `delong-test` skills.
-
-# Common failures to avoid
-
-- **Slice-level splits leaking patients across train/test** (most common small-sample bug).
-- **Selecting threshold on test set** (then reporting Sens/Spec at it).
-- **Training on test labels through tabular features** (e.g., MRI volume measurements that were used as labels).
-- **Reporting train AUC alongside test AUC without CI** — looks impressive, says nothing.
-- **Switching to deep nets when boosted trees / TabPFN already work** — expensive, not better, harder to interpret.
-
-# Reference implementations
-
-- nnU-Net: https://github.com/MIC-DKFZ/nnUNet
-- MONAI: https://monai.io
-- RadDINO: https://huggingface.co/microsoft/rad-dino
-- TabPFNv2: https://github.com/PriorLabs/TabPFN
-- DeLong test: scipy + the `delong-test` script in `scripts/`
+- [[tabular-tabpfn-vs-xgboost]] — tabular leg of late fusion
+- [[bootstrap-ci]], [[delong-test]], [[calibration-check]] — reporting requirements
+- [[model-recommend]] — query the registry for vetted picks

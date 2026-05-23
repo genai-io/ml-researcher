@@ -1,41 +1,35 @@
 ---
 name: ledger-append
-description: Append a row to experiments/ledger.tsv with the current experiment's metric, status, and one-line description. The TSV is the project's machine-readable history.
-allowed-tools: Bash, Read
+description: Append a row to experiments/ledger.tsv with the current experiment's metric, status, and one-line description. The TSV is the project's machine-readable history. Schema and description examples in references/.
+allowed-tools: Bash Read
 ---
 
-# Schema
-
-`experiments/ledger.tsv` has these columns (tab-separated):
+# Schema (compact)
 
 ```
 exp_id    commit    primary_metric    metric_value    status    description    secondary_metrics_json
 ```
 
-| Column | Type | Notes |
-|---|---|---|
-| `exp_id` | string | e.g., `EXP003_combined-linear-svm` |
-| `commit` | string | short sha of the trial's commit (or "—" for register/crash before commit) |
-| `primary_metric` | string | name of the primary metric, e.g., `val_auc` |
-| `metric_value` | float or "—" | the metric on this trial; "—" if crash |
-| `status` | string | `registered` \| `keep` \| `discard` \| `crash` |
-| `description` | string | one-line summary of what changed in this trial |
-| `secondary_metrics_json` | string | JSON dict of secondary metrics; "{}" if none |
+Tab-separated. Status ∈ `registered | keep | discard | crash`. Full column documentation: `references/schema_detail.md`.
 
 # Steps
 
-1. Determine the row values from current state:
-   - `exp_id` from current branch name (`git branch --show-current` → strip `mlr/exp/`)
-   - `commit` from `git rev-parse --short HEAD` (or "—")
+1. Determine row values from current state:
+   - `exp_id` from current branch (`git branch --show-current` → strip `mlr/exp/`)
+   - `commit` from `git rev-parse --short HEAD` (or `"—"` for register/crash before commit)
    - `primary_metric` from `research/research_goal.md` or skill argument
    - `metric_value` from `metric-grep` output
    - `status` from skill argument
    - `description` from skill argument
    - `secondary_metrics_json` JSON-encoded dict of secondary metrics (or `{}`)
 
-2. Verify `experiments/ledger.tsv` exists. If not, create it with the header row.
+2. **Verify `experiments/ledger.tsv` exists.** If not, create it with the header row:
 
-3. Append the row, **tab-separated**, with newline.
+   ```
+   exp_id	commit	primary_metric	metric_value	status	description	secondary_metrics_json
+   ```
+
+3. **Append the row**, tab-separated:
 
    ```bash
    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
@@ -43,29 +37,18 @@ exp_id    commit    primary_metric    metric_value    status    description    s
      >> experiments/ledger.tsv
    ```
 
-4. **Do not commit ledger.tsv**. It's deliberately untracked (or in `.gitignore`) so each trial doesn't pollute the experiment branch's git history. If the user wants ledger versioning, they can `git add` periodically.
-
-# Header
-
-If creating the file:
-
-```
-exp_id	commit	primary_metric	metric_value	status	description	secondary_metrics_json
-```
-
-Note the literal tabs.
+4. **Do not commit ledger.tsv.** It's deliberately untracked (or in `.gitignore`) so each trial doesn't pollute the experiment branch's git history. The user can `git add` periodically if they want versioning.
 
 # Description discipline
 
-The description should answer "what changed in this trial?" in one line. Examples:
+The description answers "what changed in this trial?" in one line. Good and bad examples: `references/description_examples.md`.
 
-- `"Lowered LR to 5e-5 from 1e-4"`
-- `"Added gradient checkpointing to fit batch=32 on A10G"`
-- `"Switched to RBF SVM from logistic; AUC 0.65 → 0.72"`
-- `"Combined clinical+rad scores via linear SVM"`
-- `"Discarded — test AUC dropped despite higher train AUC (overfit)"`
+# Hard rules
 
-NOT:
-- `"Changed train.py"` (uninformative)
-- `"Fixed bug"` (what bug?)
-- a multi-line paragraph (this is a TSV row)
+- One row per trial. Never edit existing rows; append corrections as new rows.
+- Tab-separated, literal tabs. Spaces will break downstream parsers.
+- `secondary_metrics_json` must be valid JSON — use `{}` if empty, never an empty string.
+
+# Related
+
+Pairs with [[trial-log]] (human-readable companion). The `experimenter` agent calls ledger-append after each `metric-grep` to record the trial's outcome.

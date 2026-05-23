@@ -60,9 +60,10 @@ ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (
 
 **Tools**:
 - `Edit`, `Bash` (sandboxed to current `experiments/EXPxxx/`)
-- `experiment-register`, `experiment-run`
+- `exp-register`, `exp-run`
 - `metric-grep`, `git-keep-or-reset`, `ledger-append`
-- `trial-log`
+- `trial-log`, `train-monitor`
+- `error-analysis` (post-kept trial diagnosis), `repro-seal` (on `keep`)
 
 **System prompt fragment** (extends autoresearch's `program.md` with hypothesis + localization steps):
 
@@ -71,7 +72,7 @@ ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (
 > 2. Read the last 3 ledger rows + trial_trace; state a one-line hypothesis: "expect change X to improve metric M because Y." Append to the trial log stub.
 > 3. Localize: identify the *single* code block in `train.py` most likely to drive the next improvement, and edit only that block.
 > 4. `git commit` with a one-line summary tied to the hypothesis.
-> 5. Run `experiment-run` with a fixed time budget. Redirect output to `run.log`; do NOT tee or print.
+> 5. Run `exp-run` with a fixed time budget. Redirect output to `run.log`; do NOT tee or print.
 > 6. `metric-grep` the primary metric.
 > 7. If improved: `git-keep-or-reset keep` and `ledger-append status=keep`.
 > 8. If worse, equal, or crashed: `git-keep-or-reset reset` and `ledger-append status=discard|crash`.

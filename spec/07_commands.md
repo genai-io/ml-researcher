@@ -46,7 +46,7 @@ Blockers from progress.md: None
 
 #### `/exp new <name> [motivation]`
 
-Register a new experiment via `experiment-register` skill. Branch `mlr/exp/EXPxxx_<name>`, `experiments/EXPxxx_<name>/{README.md, train.py, config.yaml}`. Append `registered` row to ledger and entry to trial trace.
+Register a new experiment via `exp-register` skill. Branch `mlr/exp/EXPxxx_<name>`, `experiments/EXPxxx_<name>/{README.md, train.py, config.yaml}`. Append `registered` row to ledger and entry to trial trace.
 
 #### `/train run [--metric <m>] [--budget <d>] [--max-iter <n>]`
 

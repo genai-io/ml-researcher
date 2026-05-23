@@ -34,15 +34,48 @@ skills/
 │
 ├── phase-advance/SKILL.md               # check gate requirements; advance phase
 ├── checklist-verify/SKILL.md            # pre-flight: baseline, dataset format, ...
-├── trial-log/SKILL.md               # structured append to trial_trace.md
+├── trial-log/SKILL.md                   # structured append to trial_trace.md
 ├── bootstrap-ci/SKILL.md                # invoke scripts/bootstrap_ci.py
 ├── delong-test/SKILL.md                 # invoke scripts/delong_test.py
 ├── train-monitor/SKILL.md               # tail run.log; classify divergence/oom/nan
 ├── figure-render/SKILL.md               # invoke scripts/figure_render.py
-└── sandbox-mode/SKILL.md                 # pipeline-scaffolding sandbox rules
+├── sandbox-mode/SKILL.md                # pipeline-scaffolding sandbox rules
+│
+├── dataset-inspect/SKILL.md             # schema / label distribution / split lock check
+├── paper-search/SKILL.md                # arxiv / HF Papers / S2 / paperswithcode search
+├── paper-read/SKILL.md                  # methodology + ablation extraction to notes/
+├── citation-graph/SKILL.md              # traverse forward/backward citations from a seed
+│
+├── error-analysis/SKILL.md              # worst-K + slice + confusion deep-dive
+├── calibration-check/SKILL.md           # Brier / ECE / reliability diagram
+├── repro-seal/SKILL.md                  # env + code + data + seed snapshot per kept run
+│
+├── ablation-planner/SKILL.md            # reviewer-defensible ablation matrix
+├── data-leak-scan/SKILL.md              # group / temporal / proxy-label / split-rederivation
+├── hypothesis-ledger/SKILL.md           # first-class hypothesis ledger (RD-Agent pattern)
+└── seed-sensitivity/SKILL.md            # N-seed metric distribution per config
 ```
 
-Skills group conceptually into three domains — ML knowledge (model-recommend, the *-transfer / *-finetune families, oom-recovery-checklist), experiment loop mechanics (exp-*, metric-grep, git-keep-or-reset, ledger-append), and methodology (phase-advance, checklist-verify, trial-log, bootstrap-ci, delong-test, train-monitor, figure-render, sandbox-mode) — but the directory layout is flat because runtime skill discovery is one level deep.
+Most skills follow the **progressive disclosure** pattern: a slim `SKILL.md` (40–80 lines: when-to-use, steps, hard rules, brief script contract) plus a sibling `references/` directory holding long templates, lookup tables, interpretation guides, and JSON schemas. The agent loads SKILL.md by default and Reads references only when the workflow needs them.
+
+```
+skills/<skill-name>/
+├── SKILL.md                  # always loaded
+├── references/               # loaded on demand
+│   ├── <topic-a>.md
+│   └── <topic-b>.md
+└── (optional) scripts/       # if the skill wraps a non-shared script
+```
+
+Skills group conceptually into five domains:
+
+- **ML knowledge** — `model-recommend`, `medical-small-sample-transfer`, `tabular-tabpfn-vs-xgboost`, `oom-recovery-checklist`
+- **Experiment-loop mechanics** — `exp-register`, `exp-run`, `metric-grep`, `git-keep-or-reset`, `ledger-append`, `train-monitor`
+- **Methodology and gates** — `phase-advance`, `checklist-verify`, `trial-log`, `sandbox-mode`, `repro-seal`, `data-leak-scan`, `hypothesis-ledger`
+- **Analysis and figures** — `bootstrap-ci`, `delong-test`, `figure-render`, `error-analysis`, `calibration-check`, `ablation-planner`, `seed-sensitivity`
+- **Retrieval and reading** — `dataset-inspect`, `paper-search`, `paper-read`, `citation-graph`
+
+The directory layout stays flat because runtime skill discovery is one level deep. For frontmatter / archetype / progressive-disclosure conventions, see [`13_skill_and_agent_template.md`](13_skill_and_agent_template.md).
 
 ## Skill format
 
@@ -52,7 +85,7 @@ Standard runtime convention — markdown with YAML frontmatter:
 ---
 name: model-recommend
 description: Recommend ML models from the registry given a task, n_samples, and modality
-allowed-tools: Read, Grep
+allowed-tools: Read Grep
 ---
 
 # When to use

@@ -1,7 +1,7 @@
 ---
 name: delong-test
 description: DeLong's test for paired AUC comparison between two models on the same dataset. Wraps scripts/delong_test.py.
-allowed-tools: Bash, Read
+allowed-tools: Bash Read
 ---
 
 # When to use

@@ -1,7 +1,7 @@
 ---
 name: metric-grep
 description: Extract metric values from run.log using the convention "<key>: <value>" lines. Returns a dict. Used after every experiment run.
-allowed-tools: Bash, Read
+allowed-tools: Bash Read
 ---
 
 # Convention

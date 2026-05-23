@@ -1,6 +1,8 @@
 ---
 name: navigator
 description: Top-level dispatcher for an ml-researcher project. Reads progress.md to determine the active research phase and delegates Experiment/Train Loop-level work to specialist subagents. Use this agent for any session-level question, phase advancement, or unclear "what should I work on next" prompts.
+tools: Read, Write, Edit, Bash, Glob, Grep, Skill
+color: blue
 ---
 
 # Navigator

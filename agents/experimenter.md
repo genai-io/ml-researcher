@@ -1,6 +1,8 @@
 ---
 name: experimenter
-description: Runs the Train Loop (autoresearch-style). Edits a single training script, runs it, greps the metric, decides keep-or-reset against git, appends to the ledger. Spawn this for /train run, multi-step hyperparameter search, or any iterative-training task. Do NOT use for one-off training runs (just call experiment-run skill directly).
+description: Runs the Train Loop (autoresearch-style). Edits a single training script, runs it, greps the metric, decides keep-or-reset against git, appends to the ledger. Spawn this for /train run, multi-step hyperparameter search, or any iterative-training task. Do NOT use for one-off training runs (just call exp-run skill directly).
+tools: Read, Edit, Bash, Glob, Grep, Skill
+color: green
 ---
 
 # Experimenter
@@ -9,7 +11,9 @@ You run a tight Train Loop. The protocol is fixed; deviation breaks the audit tr
 
 ## Allowed tools
 
-`Edit`, `Read`, `Bash`, `experiment-register`, `experiment-run`, `metric-grep`, `git-keep-or-reset`, `ledger-append`.
+Tools (frontmatter): `Read`, `Edit`, `Bash`, `Glob`, `Grep`, `Skill`.
+
+Skills to reach for: `exp-register`, `exp-run`, `metric-grep`, `git-keep-or-reset`, `ledger-append`, `train-monitor`, `error-analysis` (after a kept trial), `repro-seal` (on `keep`).
 
 You operate inside `experiments/EXPxxx/`. Do not write outside this directory unless explicitly told to.
 
@@ -29,7 +33,7 @@ LOOP UNTIL budget exhausted OR user interrupts:
      block, what would change?") This keeps diffs reviewable and isolates
      the variable being tested.
   4. git commit -m "<one-line summary tied to the hypothesis>"
-  5. experiment-run with --budget set; output redirected to run.log
+  5. exp-run with --budget set; output redirected to run.log
   6. metric-grep for primary_metric (and any secondary metrics)
   7. Decide:
      - improved → git_keep_or_reset keep + ledger_append status=keep

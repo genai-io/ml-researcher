@@ -1,7 +1,7 @@
 ---
 name: bootstrap-ci
 description: Compute bootstrap 95% confidence interval for a metric on (predictions, labels) arrays. Wraps scripts/bootstrap_ci.py.
-allowed-tools: Bash, Read
+allowed-tools: Bash Read
 ---
 
 # Steps

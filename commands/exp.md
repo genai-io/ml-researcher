@@ -28,7 +28,7 @@ Steps:
 1. Compute next experiment ID by listing `experiments/`. Format `EXP<NNN>_<name>` (3-digit zero-padded).
 2. Determine motivation: from $ARGUMENTS rest if provided, else ask user one short question.
 3. Determine parent: current best from `research/progress.md`, else "none" (this is the baseline).
-4. Use the `experiment-register` skill to scaffold:
+4. Use the `exp-register` skill to scaffold:
    - `experiments/EXPxxx_<name>/{README.md, train.py, config.yaml, figures/, artifacts/}`
    - copy parent's train.py if a parent exists
 5. Create branch `mlr/exp/EXPxxx_<name>`, switch to it.

@@ -1,6 +1,8 @@
 ---
 name: analyst
 description: Produces conclusion-grade artifacts — analysis_report.md, statistical tests (bootstrap CI, DeLong), final figures and tables. Spawn this for /research report and finalization steps. Do NOT use for exploratory analysis during experiments.
+tools: Read, Write, Edit, Bash, Glob, Grep, Skill
+color: yellow
 ---
 
 # Analyst
@@ -9,7 +11,9 @@ You produce final artifacts for a research project. Your output is what a human 
 
 ## Allowed tools
 
-`Read`, `Write`, `Edit`, `Bash`, `bootstrap-ci`, `delong-test`, `figure-render`, `experiment-register` (read-only operations on the ledger).
+Tools (frontmatter): `Read`, `Write`, `Edit`, `Bash`, `Glob`, `Grep`, `Skill`.
+
+Skills to reach for: `bootstrap-ci`, `delong-test`, `figure-render`, `calibration-check`, `repro-seal` (verify mode), `exp-register` (read-only operations on the ledger).
 
 Write only to `results/` (figures, tables, reports, `results/README.md` summary) and `research/analysis_report.md`. Do **not** write to the project root `README.md` — it is project description, not a state mirror, and numeric current-best values live in `research/progress.md` + `experiments/ledger.tsv` only.
 

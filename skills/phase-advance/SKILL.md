@@ -1,7 +1,7 @@
 ---
 name: phase-advance
-description: Check whether the current research phase's gate requirements are met, and (if --confirm) advance to the next phase. Updates research/progress.md.
-allowed-tools: Read, Edit, Glob, Grep
+description: Check whether the current research phase's gate requirements are met, and (if --confirm) advance to the next phase. Updates research/progress.md. Per-phase gate requirements in references/gate_requirements.md.
+allowed-tools: Read Edit Glob Grep
 ---
 
 # Phase order
@@ -10,36 +10,20 @@ allowed-tools: Read, Edit, Glob, Grep
 Data Understanding → Research Goal → Model Selection → Fine Tuning → Analysis Report → (Goal Revision loop)
 ```
 
-# Gate requirements per phase
+# Gate requirements
 
-To advance FROM the listed phase, these must be present:
-
-## From "Data Understanding" → "Research Goal"
-- `research/data_understanding.md` exists, non-empty, with sections: Dataset Inventory, Sample Unit, Label Definition, Cohort and Split, QC.
-- `data/splits/` has at least one of `train/`, `val/`, `test/` populated (or a manifest CSV declaring them).
-
-## From "Research Goal" → "Model Selection"
-- `research/research_goal.md` exists, non-empty, with: Primary Research Question, Endpoints (≥1), Metrics (primary metric named), Success Criteria, Baseline declared (textual — "which model is fair to compare against and why"; the baseline experiment is registered and run *during* Model Selection, not before).
-
-## From "Model Selection" → "Fine Tuning"
-- `research/model_selection.md` exists, non-empty, with a shortlist of ≥1 model and ≥1 rejection.
-- The baseline experiment is registered and kept: `bash <CFG>/hooks/checks.sh baseline-kept` returns 0 — i.e., a row in `experiments/ledger.tsv` whose description contains "baseline" with `status=keep`. The same rule is applied by the `preflight` hook before any subsequent experiment run, so improvement claims always have a comparator. Non-baseline shortlisted candidates are *registered* at the start of Fine Tuning via `/exp new` — they don't need kept runs at this gate.
-
-## From "Fine Tuning" → "Analysis Report"
-- `research/fine_tuning.md` exists, non-empty, with parameter ranges per shortlisted model.
-- Each shortlisted model has at least 5 keep+discard rows in the ledger.
-
-## From "Analysis Report" → done (or Goal Revision)
-- `research/analysis_report.md` exists, non-empty, with Conclusion and Limits sections.
-- `results/` is non-empty (figures, tables, or report artifact).
+For the full per-transition requirement table see `references/gate_requirements.md`. The mechanical rules also live in `<CFG>/hooks/checks.sh`, which is authoritative — this skill explains *why* and *what to do*.
 
 # Steps
 
 1. **Read current phase** from `research/progress.md`.
 
-2. **Look up gate requirements** from the table above for `current → next`.
+2. **Look up gate requirements** for `current → next` (see references).
 
-3. **Check each requirement** systematically. For file-existence checks, use `ls`/`Glob`. For section presence, `Grep` for required headings (e.g., `^## Dataset Inventory`).
+3. **Check each requirement** systematically:
+   - File-existence checks: `ls` / `Glob`
+   - Section presence: `Grep` for required headings (e.g., `^## Dataset Inventory`)
+   - Ledger / experiment state: shell out to `<CFG>/hooks/checks.sh` for the canonical rules
 
 4. **Build report**:
 
@@ -63,4 +47,8 @@ To advance FROM the listed phase, these must be present:
 
 # Goal Revision loop
 
-If the user explicitly requests Goal Revision (after Analysis Report), copy the current `research_goal.md` to `research/goal_revision_<date>.md` first to preserve history, then allow editing the live `research_goal.md`. Note in `progress.md` that revision is in progress.
+If the user explicitly requests Goal Revision (after Analysis Report), copy `research/research_goal.md` to `research/goal_revision_<date>.md` first to preserve history, then allow editing the live `research_goal.md`. Note in `progress.md` that revision is in progress.
+
+# Related
+
+The `critic` agent runs at the gate before advancement. The `checklist-verify` skill runs `kind=pre-phase-advance` against the same rules.
