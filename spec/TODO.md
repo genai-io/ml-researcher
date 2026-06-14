@@ -4,13 +4,13 @@ Things explicitly out of scope for v0.1, with a brief reason and the trigger tha
 
 ## Standalone `mlr` binary
 
-Earlier drafts proposed building a binary derived from gen-code with a `nouserconfig` build tag. Dropped because: a binary duplicates work the runtime already does. The methodology is the product; the runtime is gen-code or Claude Code.
+Earlier drafts proposed building a binary derived from gen-code with a `nouserconfig` build tag. Dropped because: a binary duplicates work the runtime already does. The methodology is the product; the runtime is San.
 
 **Trigger to revisit**: a runtime-level capability (e.g., custom permission policy, custom UI) becomes load-bearing for ml-researcher AND can't be expressed as a hook or skill.
 
 ## Plugin marketplace listing
 
-Listing on Claude Code or gen-code's plugin marketplace would lower install friction for casual users (one click vs `curl | bash`).
+Listing on San's plugin marketplace would lower install friction for casual users (one click vs `curl | bash`).
 
 **Trigger to revisit**: ml-researcher has a stable user base of ≥20 active projects and a marketplace listing would clearly help discovery.
 
@@ -24,11 +24,11 @@ Wrapping ml-researcher's skills + scripts as MCP servers would let runtimes that
 
 Adopting GitHub's [spec-kit](https://github.com/github/spec-kit) layout for the methodology templates would make ml-researcher's per-experiment lifecycle work in 30+ AI tools (Cursor, Copilot, Gemini, etc.) for free.
 
-**Trigger to revisit**: a user request from someone on Cursor/Copilot, or a clean way to layer spec-kit's `.specify/` next to `.claude/` without doubling the conceptual surface.
+**Trigger to revisit**: a user request from someone on Cursor/Copilot, or a clean way to layer spec-kit's `.specify/` next to `.san/` without doubling the conceptual surface.
 
 ## Auto-update tooling for existing projects
 
-Currently, `init.sh --in-place` overwrites methodology files; it does not selectively port new agents/skills into a project that's already done research. A tool that diffs `.claude/` against a target ml-researcher version and previews changes would be useful.
+Currently, `install.sh --no-scaffold` refreshes the `.san/` persona but does not selectively port new agents/skills into a project that's already done research without touching its records. A tool that diffs `.san/` against a target ml-researcher version and previews changes would be useful.
 
 **Trigger to revisit**: a researcher with a long-lived project asks how to take advantage of new ml-researcher features without re-init-ing.
 

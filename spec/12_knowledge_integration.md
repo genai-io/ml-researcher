@@ -63,7 +63,7 @@ The hardware sizing table and dataset-format-by-method table in ml-intern's prom
 
 ### 1.6 Skill / playbook files
 
-`mudler/universal-ml-intern` is built around `SKILLS` + `AGENTS.md` — recipe markdown files the agent loads on demand. Anthropic Skills, Claude Code skills, and the gen-code skill registry use the same pattern: markdown with frontmatter, description triggers loading, body is the recipe. Examples in active use elsewhere: "small-sample medical imaging with transfer learning", "fine-tune SigLIP2 for retrieval", "DPO data format conversion."
+`mudler/universal-ml-intern` is built around `SKILLS` + `AGENTS.md` — recipe markdown files the agent loads on demand. Anthropic Skills, San, Claude Code skills, and the gen-code skill registry use the same pattern: markdown with frontmatter, description triggers loading, body is the recipe. Examples in active use elsewhere: "small-sample medical imaging with transfer learning", "fine-tune SigLIP2 for retrieval", "DPO data format conversion."
 
 This is the most **scalable** technique — adding a new domain is one PR adding a markdown file.
 
@@ -265,7 +265,7 @@ Block with a structured remediation list when any item fails. This is what makes
 
 ## Domain customization via `playbook.md`
 
-The default `internal/prompts/ml_researcher_v1.yaml` is domain-neutral. Project-specific guidance lives in `.mlr/playbook.md`, loaded into the agent's working context at session start. Examples:
+The default persona (`system/{identity,behavior,rules}.md`) is domain-neutral. Project-specific guidance lives in a project-level `playbook.md`, loaded into the agent's working context at session start. Examples:
 
 - **Radiomics / small-sample medical**: small-N guardrails, patient-level splits, calibration, DeLong test, RBF-SVM vs logistic for clinical fusion (rad-research's domain).
 - **NLP fine-tuning**: format checks (SFT/DPO/GRPO), tokenizer compatibility, ml-intern's pre-flight verbatim.

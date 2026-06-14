@@ -1,6 +1,6 @@
 # 06 — Skills and Scripts
 
-ml-researcher does not implement custom tools as Go code. Domain-specific behavior is delivered as **skills** (markdown files the agent loads on demand) and **scripts** (small Python helpers invoked from skills via Bash). The agent runtime (Claude Code, gen-code, Codex) already provides the primitive tools (Read, Write, Edit, Bash, Glob, Grep, Agent, WebFetch, WebSearch) — skills compose them into ML-domain workflows.
+ml-researcher does not implement custom tools as Go code. Domain-specific behavior is delivered as **skills** (markdown files the agent loads on demand) and **scripts** (small Python helpers invoked from skills via Bash). The San runtime already provides the primitive tools (Read, Write, Edit, Bash, Glob, Grep, Agent, WebFetch, WebSearch) — skills compose them into ML-domain workflows.
 
 ## Why skills, not custom tools
 
@@ -17,7 +17,7 @@ Most of ml-researcher's "tools" are recipes: "to register an experiment, run the
 
 ## Skill organization
 
-Skills live in `skills/`. Each skill is its own directory containing a `SKILL.md` file — the standard Anthropic Skills layout. The directory name is the skill's slug; runtimes (Claude Code, Gen Code, Codex) discover skills by walking `skills/*/SKILL.md`.
+Skills live in `skills/` and ship inside the persona (`.san/personas/ml-researcher/skills/`). Each skill is its own directory containing a `SKILL.md` file — the standard Agent Skills layout. The directory name is the skill's slug; San discovers skills by walking `skills/*/SKILL.md`.
 
 ```
 skills/

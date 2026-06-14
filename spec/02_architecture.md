@@ -93,7 +93,7 @@ The documented persona overlay schema is description / skills / agents / disable
 
 ## Multi-runtime support (legacy)
 
-ml-researcher previously shipped via `init.sh --runtime claude|gen|codex`, delivering the prompt as `CLAUDE.md` / `.gen/identities/` / `AGENTS.md`. That path has been **removed**: San is now the runtime, and `install.sh` is the single entry point. (The pre-pivot `spec/` docs `03`–`08` and `10` still describe the old `<config-dir>` model; they are superseded by this document and `09_packaging.md` pending a full spec sweep.)
+ml-researcher previously shipped via `init.sh --runtime claude|gen|codex`, delivering the prompt as `CLAUDE.md` / `.gen/identities/` / `AGENTS.md`. That path has been **removed**: San is now the runtime, and `install.sh` is the single entry point. The rest of `spec/` describes the current San persona model; `10_milestones.md` carries a historical note where its early milestones predate the pivot.
 
 ## What `install.sh` does NOT do
 
