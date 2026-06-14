@@ -38,7 +38,7 @@ See [`01_overview.md`](01_overview.md) for how these are combined.
 |---|---|
 | Delivery vehicle | `install.sh` curl-bash, San persona; **no plugin install, no binary, no package manager** |
 | Config dir | `.san/` (project scope) or `~/.san` (`--user` scope); persona at `.san/personas/ml-researcher/` |
-| Runtime | [San](https://github.com/genai-io/san); legacy `claude`/`gen`/`codex` via `init.sh` deprecated |
+| Runtime | [San](https://github.com/genai-io/san) only; legacy `claude`/`gen`/`codex` `init.sh` path removed |
 | Train Loop metric scope | Single primary metric; optional secondary metrics declared per project |
 | `respec/` flavor | Domain-neutral default; project-level overrides via `playbook.md` |
 | Standalone binary | Deferred indefinitely; tracked in [`TODO.md`](TODO.md) |
