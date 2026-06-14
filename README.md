@@ -88,7 +88,7 @@ Removes the persona and the files it owns, and drops the selection if it pointed
 - [San](https://github.com/genai-io/san) — the agent CLI.
 - `git` (remote install) and `python3` (safe `settings.json` merge on macOS/Linux; Windows uses native PowerShell JSON).
 
-> **Legacy:** the old `init.sh "<topic>" --runtime claude|gen|codex` bootstrapper is **deprecated**. It still works as a thin shim that forwards to `install.sh`, but San is now the runtime.
+> **Legacy:** the old `init.sh "<topic>" --runtime claude|gen|codex` bootstrapper has been **removed** — San is the runtime now. Use `install.sh` (above); pass a `<topic>` to scaffold a project.
 
 ---
 

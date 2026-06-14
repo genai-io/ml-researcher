@@ -11,7 +11,7 @@
 
 **Why it matters**: a single patient often contributes many samples (slices, sessions, augmented views). Random row-level splitting puts the *same patient* in both train and test; the model memorizes patient-specific signal and posts artificially high test metrics.
 
-**Typical fix**: re-do splits with `GroupShuffleSplit(groups=patient_ids)` (see `medical-small-sample-transfer/references/splits.md`). Re-lock the splits via `init.sh`.
+**Typical fix**: re-do splits with `GroupShuffleSplit(groups=patient_ids)` (see `medical-small-sample-transfer/references/splits.md`). Re-lock the splits (re-record `data/splits/MANIFEST.json`).
 
 ## 2. Temporal leakage
 
@@ -53,7 +53,7 @@ features:
 
 ## 4. Split-rederivation leakage
 
-**Symptom**: `data/splits/MANIFEST.json` (or the split CSV files) was modified after the initial `init.sh` lock.
+**Symptom**: `data/splits/MANIFEST.json` (or the split CSV files) was modified after the initial split lock.
 
 **How the scanner detects**:
 - Compare the manifest's stored hashes against the actual file checksums.
@@ -61,7 +61,7 @@ features:
 
 **Why it matters**: re-randomizing splits during the project lets the user (consciously or not) re-roll until the test set looks favorable. The lock at init prevents this — but only if it's enforced.
 
-**Typical fix**: investigate WHY the splits changed. If legitimate (new data arrived), call `init.sh --relock` to record the new state — but understand that any prior experiment is now incomparable. If illegitimate, restore the splits from git history.
+**Typical fix**: investigate WHY the splits changed. If legitimate (new data arrived), re-record the split manifest (`data/splits/MANIFEST.json`) to capture the new state — but understand that any prior experiment is now incomparable. If illegitimate, restore the splits from git history.
 
 ## What the scanner does NOT catch
 

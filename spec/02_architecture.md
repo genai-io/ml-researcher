@@ -93,7 +93,7 @@ The documented persona overlay schema is description / skills / agents / disable
 
 ## Multi-runtime support (legacy)
 
-ml-researcher previously shipped via `init.sh --runtime claude|gen|codex`, delivering the prompt as `CLAUDE.md` / `.gen/identities/` / `AGENTS.md`. That path is **deprecated**: San is now the runtime. `init.sh` is retained only as a thin shim that forwards to `install.sh`, so existing curl one-liners keep working.
+ml-researcher previously shipped via `init.sh --runtime claude|gen|codex`, delivering the prompt as `CLAUDE.md` / `.gen/identities/` / `AGENTS.md`. That path has been **removed**: San is now the runtime, and `install.sh` is the single entry point. (The pre-pivot `spec/` docs `03`–`08` and `10` still describe the old `<config-dir>` model; they are superseded by this document and `09_packaging.md` pending a full spec sweep.)
 
 ## What `install.sh` does NOT do
 

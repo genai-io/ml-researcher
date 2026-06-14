@@ -19,7 +19,7 @@ Four pattern families (full detail: `references/leak_patterns.md`):
 1. **Group leakage** — the same patient / session / device appears in both train and test
 2. **Temporal leakage** — train timestamps include events from after the test set's earliest timestamp
 3. **Proxy-label leakage** — a feature was computed using the label (e.g., MRI volume measurements where volume was used as the label)
-4. **Split-rederivation** — splits files were modified after the initial init.sh lock
+4. **Split-rederivation** — splits files were modified after the initial split lock
 
 # Steps
 

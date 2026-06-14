@@ -103,9 +103,9 @@ Removes the persona directory and the agents/commands/hooks files this persona o
 
 ml-researcher is a public GitHub repo. No PyPI / npm / Homebrew, no plugin marketplace listing (possible later; see TODO), no Docker image — the installer needs only `git`, `bash`, `sed`, `find`, and optionally `python3`.
 
-## Legacy `init.sh`
+## Legacy `init.sh` (removed)
 
-The previous bootstrapper (`init.sh "<topic>" --runtime claude|gen|codex`) is **deprecated**. It is retained as a thin shim that prints a notice and forwards to `install.sh`, so documented curl one-liners keep working through the transition. The `--runtime` flag is ignored (San is the runtime); `--in-place` is the default; `--ref` maps to `ML_RESEARCHER_REF`.
+The previous bootstrapper (`init.sh "<topic>" --runtime claude|gen|codex`) has been **removed**. `install.sh` fully replaces it: a `<topic>` argument scaffolds the project (the old `--in-place` is the default behavior), `--ref` is replaced by the `ML_RESEARCHER_REF` env var, and the `--runtime` flag is gone (San is the runtime).
 
 ## Verification
 
