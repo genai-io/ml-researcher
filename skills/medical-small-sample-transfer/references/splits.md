@@ -21,7 +21,7 @@ The visible symptom: train AUC ≫ test AUC; test AUC drops further when a held-
 
 ## Locking at init
 
-Locked splits live under `data/splits/{train,val,test}/` (or a `MANIFEST.json` declaring them). `init.sh` creates these once and stores checksums in `data/splits/MANIFEST.json`. The `test_set_guard.sh` hook blocks Reads of `data/splits/test/**` during Model Selection and Fine Tuning phases.
+Locked splits live under `data/splits/{train,val,test}/` (or a `MANIFEST.json` declaring them). `install.sh` scaffolds these once and stores checksums in `data/splits/MANIFEST.json`. The `test_set_guard.sh` hook blocks Reads of `data/splits/test/**` during Model Selection and Fine Tuning phases.
 
 The `repro-seal` skill records each split's checksum in `repro_seal.json` so the analyst can verify the split hasn't drifted between sealing and finalization.
 

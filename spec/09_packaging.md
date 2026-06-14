@@ -1,121 +1,132 @@
 # 09 — Packaging and Install
 
-ml-researcher delivers content via one bash script. There is no package manager, no plugin manifest, no module registry. This document describes the install model end-to-end so anyone — human or agent — can reproduce it.
+ml-researcher is a San persona, delivered by an installer script — the same model as [genai-io/social-creator](https://github.com/genai-io/social-creator). There is no package manager, no plugin manifest, no module registry. This document describes the install model end-to-end so anyone — human or agent — can reproduce it.
 
-## The only delivery mechanism
+## The delivery mechanism
+
+**macOS / Linux:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
-  | bash -s -- "<topic>" [--runtime claude|gen|codex] [--in-place]
+# Persona only (enable it in an existing project)
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh | bash
+
+# Persona + scaffold a research project for a topic
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh \
+  | bash -s -- "<topic>"
+
+# User scope (persona everywhere; no project scaffold)
+curl -fsSL .../install.sh | bash -s -- --user
 ```
 
-The script source is in [`02_architecture.md`](02_architecture.md). Reading it top-to-bottom is the spec — there is no hidden behavior.
+**Windows (PowerShell 5.1+):**
 
-Equivalent without the curl pipe:
+```powershell
+irm https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.ps1 | iex
+& ([scriptblock]::Create((irm .../install.ps1))) -Topic "<topic>"
+```
+
+The script source ([`install.sh`](../install.sh)) reads top-to-bottom as the spec — there is no hidden behavior. Equivalent without the curl pipe:
 
 ```bash
 git clone --depth 1 https://github.com/genai-io/ml-researcher.git /tmp/mlr
-/tmp/mlr/init.sh "<topic>"
+/tmp/mlr/install.sh "<topic>"
 rm -rf /tmp/mlr   # optional
 ```
 
+## Scope
+
+| Flag | Config dir | Use |
+|---|---|---|
+| (default) | `<cwd>/.san` | project scope — persona active in this project |
+| `--dir <path>` | `<path>/.san` | project scope at an explicit path (and scaffold there) |
+| `--user` | `~/.san` | user scope — persona available in every project; no scaffold |
+
+Project scope overrides user scope, matching San's persona precedence.
+
 ## What ends up on disk
 
-After `init.sh "GBM tumor purity"` (default runtime = claude):
+After `install.sh "GBM tumor purity"` (project scope):
 
 ```
-gbm-tumor-purity/             ← project root, fully self-contained
-├── .git/                     ← initialized with first commit
-├── README.md                 ← topic, date, current phase, navigation
-├── CLAUDE.md                 ← ml_researcher.md system prompt
-├── .claude/
-│   ├── agents/               ← copied from ml-researcher/agents/
-│   ├── skills/               ← copied from ml-researcher/skills/
-│   ├── commands/             ← copied from ml-researcher/commands/
-│   └── hooks/                ← copied from ml-researcher/hooks/
-├── respec/                   ← methodology templates, copied from template/respec/
-├── research/
-│   ├── progress.md           ← phase=Data Understanding, date filled
-│   ├── data_understanding.md ← stub
-│   └── ...                   ← stubs for remaining stages
-├── data/
-│   ├── README.md
-│   ├── model_registry.yaml   ← copied from ml-researcher/data/
-│   ├── raw/, derived/, splits/  (empty dirs)
-├── experiments/
-│   ├── README.md
-│   └── ledger.tsv            ← header-only TSV
-├── results/
-├── papers/
-└── scripts/                  ← copied from ml-researcher/scripts/
-    ├── bootstrap_ci.py
-    ├── delong_test.py
-    └── figure_render.py
+gbm-tumor-purity/             ← project root (run install from here)
+├── .san/
+│   ├── personas/ml-researcher/
+│   │   ├── system/{identity,behavior,rules}.md
+│   │   ├── skills/<name>/SKILL.md
+│   │   └── settings.json        ← the persona overlay
+│   ├── agents/<name>.md         ← 6 subagents
+│   ├── commands/<name>.md       ← 6 slash commands
+│   ├── hooks/<name>.sh          ← methodology hook scripts
+│   └── settings.json            ← "persona": "ml-researcher" + merged hooks block
+├── research/   progress.md (phase=Data Understanding) + per-phase stubs
+├── experiments/ ledger.tsv (header only)
+├── data/       raw/ derived/ splits/ + model_registry.yaml
+├── results/ papers/ respec/ scripts/
+└── .git/       initialized with first commit
 ```
 
-Nothing references `~/.claude/`, `~/.gen/`, or anything outside this directory. Move the project to another machine, run `git clone` then `claude` — it works.
+The scaffolded project is self-contained: move it to another machine, `git clone`, install San, and `/persona ml-researcher` — it works. Run `install.sh` with no topic (or `--no-scaffold`) and only the `.san/` persona is written — nothing else in the directory is touched.
 
-## Runtime selection
+## Enabling and switching
 
-| Flag | Project config dir | System prompt file |
-|---|---|---|
-| (default) `--runtime claude` | `.claude/` | `CLAUDE.md` |
-| `--runtime gen` | `.gen/` | `GEN.md` |
-| `--runtime codex` | `.codex/` | `AGENTS.md` |
+The installer sets `"persona": "ml-researcher"` in the target `settings.json` (other keys preserved). After that, `san` in the directory loads the persona. Switch by hand:
 
-The agents/skills/commands/hooks content is identical across runtimes. Only file paths differ. See [`02_architecture.md`](02_architecture.md) for the runtime support matrix.
+```
+/persona ml-researcher    # activate
+/persona default          # back to built-in San
+```
 
 ## Versioning
 
-`init.sh` accepts `--ref <commit-or-tag-or-branch>` (default `main`). The clone is `--depth 1 --branch <ref>`, so:
+`install.sh` honors `ML_RESEARCHER_REF` (default `main`); the clone is `--depth 1 --branch <ref>`:
 
 ```bash
-init.sh "topic" --ref v0.1.0       # frozen at tagged release
-init.sh "topic" --ref abc1234      # specific commit
-init.sh "topic"                     # latest main
+ML_RESEARCHER_REF=v0.1.0 curl -fsSL .../install.sh | bash -s -- "<topic>"
 ```
 
-The chosen ref is recorded in the project's git history (the initial commit's message could include the ml-researcher commit if useful — TODO).
+The chosen ref is recorded in the scaffolded project's first commit.
 
-## Updates after init
+## Updates after install
 
-Projects do not auto-update. This is intentional:
+Scaffolded projects do not auto-update. A research project is a sealed scientific record; methodology drift after creation is a reproducibility hazard. To pull newer ml-researcher behavior into an existing project, re-run `install.sh --no-scaffold` (refreshes the `.san/` persona without touching your `research/` work). Selective porting of methodology templates is tracked in [`TODO.md`](TODO.md).
 
-- A research project is a sealed scientific record. Methodology drift after creation is a reproducibility hazard.
-- If a user wants newer ml-researcher behavior in an existing project, they re-run `init.sh --in-place "<topic>"` in the project directory — but this overwrites methodology files. They must reconcile manually.
-- For most projects, freeze-at-init is the right default.
+## Uninstall
 
-A future tool could selectively port new agents/skills into an existing project without touching the methodology templates. Tracked in [`TODO.md`](TODO.md).
+```bash
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/uninstall.sh | bash
+# Windows: irm .../uninstall.ps1 | iex
+```
+
+Removes the persona directory and the agents/commands/hooks files this persona owns (by exact name, so other personas are untouched), and drops the `"persona"` selection only if it points at ml-researcher. It does **not** delete a scaffolded `research/ experiments/ data/` — that is the user's work.
 
 ## Distribution
 
-ml-researcher is a public GitHub repo. There is no other distribution channel:
+ml-researcher is a public GitHub repo. No PyPI / npm / Homebrew, no plugin marketplace listing (possible later; see TODO), no Docker image — the installer needs only `git`, `bash`, `sed`, `find`, and optionally `python3`.
 
-- No PyPI / npm / Homebrew / brew tap.
-- No Claude Code plugin marketplace listing (possible later; see TODO).
-- No Docker image (init.sh only needs `git`, `bash`, `sed`, `find` — already on every developer machine).
+## Legacy `init.sh`
+
+The previous bootstrapper (`init.sh "<topic>" --runtime claude|gen|codex`) is **deprecated**. It is retained as a thin shim that prints a notice and forwards to `install.sh`, so documented curl one-liners keep working through the transition. The `--runtime` flag is ignored (San is the runtime); `--in-place` is the default; `--ref` maps to `ML_RESEARCHER_REF`.
 
 ## Verification
 
-To verify a fresh install works on a clean machine:
+To verify a fresh install on a clean machine:
 
 ```bash
-docker run -it --rm -v $(pwd):/work alpine sh -c '
-  apk add --no-cache git bash curl coreutils findutils sed
+docker run -it --rm -v "$(pwd):/work" alpine sh -c '
+  apk add --no-cache git bash curl coreutils findutils sed python3
   cd /work
-  curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
-    | bash -s -- "smoke test" --in-place
-  ls -la
+  curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh \
+    | bash -s -- "smoke test"
+  ls -la .san/personas/ml-researcher && cat .san/settings.json
 '
 ```
 
-The result should match the layout above.
+The result should match the layout above, with `"persona": "ml-researcher"` and a `hooks` block in `.san/settings.json`.
 
 ## What's deferred
 
-- Optional `mlr` CLI wrapper (just runs `init.sh` with sane defaults). Marginal value vs the curl-bash one-liner.
-- Plugin marketplace listing for Claude Code or gen-code.
-- Auto-update tooling for existing projects.
-- Docker image (only useful if init.sh grows complex; resist).
+- Plugin marketplace listing for San.
+- Auto-update / selective-port tooling for existing projects.
+- Docker image (only useful if the installer grows complex; resist).
 
-These are tracked in [`TODO.md`](TODO.md).
+Tracked in [`TODO.md`](TODO.md).

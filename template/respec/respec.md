@@ -6,7 +6,7 @@ This file is the methodology constitution. It is **not** a project record (proje
 
 ## 1. Core principles
 
-These are non-negotiable. The ml_researcher.md system prompt enforces them; the critic subagent audits them; hooks block the most common violations.
+These are non-negotiable. The persona's `rules.md` enforces them; the critic subagent audits them; hooks block the most common violations.
 
 1. **Data before model.** Define data sources, sample units, labels, splits, quality, and limits before designing models.
 2. **Goal before optimization.** Define the research question, primary metric, baseline, required figures, and success criteria before running experiments.

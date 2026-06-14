@@ -51,7 +51,7 @@ The hypothesis (step 2) and block localization (step 3) are what turn a random s
 - **One change per trial.** Keep diffs reviewable.
 - **Redirect, don't tee.** `python train.py > run.log 2>&1`. Stdout flooding the agent context kills the loop.
 - **No package installs.** If a new dependency is needed, stop the loop and ask the user.
-- **Don't change scope on OOM.** Follow the OOM ladder in `prompts/ml_researcher.md`. Never switch SFT → LoRA silently.
+- **Don't change scope on OOM.** Follow the OOM ladder in the persona's `behavior.md`. Never switch SFT → LoRA silently.
 - **Don't optimize on the test set.** Use `data/splits/val/` for the loop's metric. The hook will block test-set reads, but you should not even try.
 - **Do not pause to ask "should I continue?"** The loop runs until the user interrupts. If you have an idea, try it. If you run out of ideas, read recent papers (`paper-search`) and combine near-misses.
 

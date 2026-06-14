@@ -52,7 +52,7 @@ Do NOT use for the test split during selection/tuning phases — the hook will b
 
 5. **Surface the summary to the agent**, plus any `schema_warnings`. Don't dump the JSON wholesale — pick the 3-5 fields relevant to the caller's question.
 
-6. **If `test_split_locked` is false** and the phase is `Model Selection` or `Fine Tuning`, flag the issue and recommend `init.sh` re-lock the splits before any experiment.
+6. **If `test_split_locked` is false** and the phase is `Model Selection` or `Fine Tuning`, flag the issue and recommend re-locking the splits (re-record `data/splits/MANIFEST.json`) before any experiment.
 
 # Hard rules
 
