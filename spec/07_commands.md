@@ -1,6 +1,6 @@
 # 07 — Slash Commands
 
-Six built-in slash commands cover the entire lifecycle. Each is a markdown file under `commands/`, copied into a project's `<config-dir>/commands/` by `init.sh`. Subcommands are dispatched via `$ARGUMENTS` parsing inside the command body.
+Six built-in slash commands cover the entire lifecycle. Each is a markdown file under `commands/`, installed to `.san/commands/` by `install.sh`. Subcommands are dispatched via `$ARGUMENTS` parsing inside the command body.
 
 ## The six commands
 
@@ -102,7 +102,7 @@ Returns PASS / WARN / BLOCK with file:line citations. BLOCK halts the calling ac
 
 ## Custom commands
 
-Projects can add commands in `<config-dir>/commands/<name>.md` (e.g. `.claude/commands/`). Same format as built-in: optional YAML frontmatter + markdown body. The `$ARGUMENTS` variable holds the user's input after the command name.
+Projects can add commands in `.san/commands/<name>.md`. Same format as built-in: optional YAML frontmatter + markdown body. The `$ARGUMENTS` variable holds the user's input after the command name.
 
 Example:
 
@@ -122,6 +122,6 @@ Verify output exists in `data/derived/features/`.
 
 ## What we deliberately did NOT add
 
-- `/init` slash command — bootstrapping a project is `init.sh`'s job (bash, outside the agent). Inside the agent, init is already done.
+- `/init` slash command — bootstrapping a project is `install.sh`'s job (bash, outside the agent). Inside the agent, init is already done.
 - `/state`, `/resume` — folded into `/research phase` (which reads progress.md). One command per concept.
 - Bare `/critic` and `/checklist` — replaced by `/audit` and `/preflight` for consistency with the verb-first / noun-first rule.

@@ -8,14 +8,16 @@ A research project is a directory. The directory is the unit of reproducibility,
 my-research/
 ├── README.md                        # main entry point
 │
-├── .claude/                         # project agent config (Claude Code default)
-│   ├── settings.json                # permissions, env, hooks
-│   ├── agents/                      # project-specific agent overrides (optional)
-│   ├── commands/                    # project-specific slash commands (optional)
-│   ├── mcp.json                     # project MCP servers (optional)
-│   ├── plugins/
-│   │   └── ml-researcher/           # ml-researcher plugin, project-local copy (optional)
-│   └── playbook.md                  # domain-specific decisions, rationale, conventions
+├── .san/                            # San persona + agents/commands/hooks (the "brain")
+│   ├── settings.json                # "persona": "ml-researcher" + permissions, env, merged hooks
+│   ├── personas/
+│   │   └── ml-researcher/           # the installed persona
+│   │       ├── system/              # identity.md, behavior.md, rules.md
+│   │       ├── skills/              # persona-scoped skills
+│   │       └── settings.json        # persona overlay (description/skills/agents/permissions)
+│   ├── agents/                      # the 6 subagents (+ project overrides, optional)
+│   ├── commands/                    # the 6 slash commands (+ project additions, optional)
+│   └── hooks/                       # methodology hook scripts
 │
 ├── respec/                          # methodology templates (copied at init)
 │   ├── README.md
@@ -74,7 +76,7 @@ my-research/
 | Directory | What lives here | Who writes |
 |---|---|---|
 | `README.md` | Project entry, current state, key results, navigation | agent + human |
-| `.claude/` | Agent configuration scoped to this project (gen-code reads `.gen/`; structure is identical) | human (rare); agent (during init) |
+| `.san/` | San persona, agents, commands, and hooks scoped to this project (installed by `install.sh`) | human (rare); installer |
 | `respec/` | Methodology templates; do not fill with project results | template; copied at init |
 | `research/` | Project-instantiated methodology records | agent + human |
 | `data/raw/` | Original data; never modified | human; protected by hook |
@@ -104,7 +106,7 @@ Not every directory is required at init. The minimum is:
 ```
 my-research/
 ├── README.md
-├── .mlr/settings.json
+├── .san/settings.json
 ├── respec/                  # full templates
 ├── research/progress.md     # at least progress
 ├── data/README.md
@@ -114,8 +116,8 @@ my-research/
 
 `papers/`, individual `research/*.md`, and `experiments/EXPxxx/` directories are created on demand by the corresponding agents.
 
-## Why `.claude/` (and not a custom `.mlr/`)
+## Why `.san/` (and not a custom `.mlr/`)
 
-The project config directory follows the chosen runtime: `.claude/` for Claude Code, `.gen/` for gen-code, `.codex/` for Codex. `init.sh` writes to whichever directory matches `--runtime`. There is no `.mlr/` — ml-researcher does not introduce a new runtime, so it does not need a new convention.
+The config directory is San's convention: `.san/` at project scope (or `~/.san/` at user scope). `install.sh` writes the persona, agents, commands, and hooks there. There is no `.mlr/` — ml-researcher rides on San rather than introducing a new runtime, so it reuses San's directory convention.
 
-The schema inside the config dir is identical across runtimes: `agents/`, `skills/`, `commands/`, `hooks/`. Only the directory name and the prompt-file name (`CLAUDE.md` / `GEN.md` / `AGENTS.md`) differ.
+The persona prompt is delivered as the four-part system files `personas/ml-researcher/system/{identity,behavior,rules}.md` (San fills the fourth part, `environment`, at runtime) — not as a single `CLAUDE.md`/`GEN.md`/`AGENTS.md` memory file as in the pre-pivot design.

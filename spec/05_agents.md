@@ -1,6 +1,6 @@
 # 05 — Built-in Agents
 
-ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (markdown with YAML frontmatter) and copied into a project's `<config-dir>/agents/` by `init.sh`. Projects may override or supplement them via `<config-dir>/agents/`.
+ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (markdown with YAML frontmatter) and installed to `.san/agents/` by `install.sh` (San loads subagents from `.san/agents/*.md`). The persona's `settings.json` allow-lists these six. Projects may override or supplement them by adding same-named files in `.san/agents/`.
 
 ## Roster
 
@@ -19,9 +19,9 @@ ml-researcher ships six built-in agents. Each is defined in `agents/<name>.md` (
 
 **Role**: Default conversation agent. Reads `research/progress.md` to determine the active phase and dispatches to specialists. Owns Research Loop-level decisions like phase transitions.
 
-**Tools**: full set inherited from gen-code, plus `phase_advance`, `trial_log`.
+**Tools**: full set inherited from San, plus `phase_advance`, `trial_log`.
 
-**System prompt fragment** (illustrative; see `internal/prompts/`):
+**System prompt fragment** (illustrative; the shipped prompt is `agents/navigator.md`):
 
 > You are the entry agent for an ml-researcher session. Read `research/progress.md` first to know the current phase. Your job is to advance the project at the Research Loop timescale: data → goal → selection → tuning → report → revision. Delegate Experiment-level work (literature) and Train Loop-level work (experiments) to specialist agents via the `Agent` tool. Do not run experiments yourself; spawn `experimenter`.
 
@@ -120,10 +120,10 @@ navigator
   └── (hook-triggered) Agent critic ── before phase-advance, before commit on protected paths
 ```
 
-A subagent's session is forked from navigator's project context (same `<config-dir>/`, same project files). It does not inherit conversation history unless explicitly forked.
+A subagent's session is forked from navigator's project context (same `.san/`, same project files). It does not inherit conversation history unless explicitly forked.
 
 ## Agent overrides at project level
 
-A project can override any built-in agent by placing a same-named file in `.mlr/agents/`. The project file fully replaces the built-in. Example: a clinical research project might override `analyst` to require DeLong tests for AUC comparisons by default.
+A project can override any built-in agent by placing a same-named file in `.san/agents/`. The project file fully replaces the built-in. Example: a clinical research project might override `analyst` to require DeLong tests for AUC comparisons by default.
 
-For minor additions, a project can add new agents (e.g., `radiomics-feature-engineer`) in `.mlr/agents/` without touching the built-ins.
+For minor additions, a project can add new agents (e.g., `radiomics-feature-engineer`) in `.san/agents/` without touching the built-ins.

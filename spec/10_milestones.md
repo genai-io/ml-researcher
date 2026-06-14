@@ -1,29 +1,31 @@
 # 10 — Milestones
 
-The v0.1 roadmap reflects the zero-install architecture. Each milestone is a complete, demonstrable slice; do not start the next until the current one is verifiably working.
+The v0.1 roadmap reflects the San persona architecture. Each milestone is a complete, demonstrable slice; do not start the next until the current one is verifiably working.
+
+> Historical note: M1–M2 were authored before the pivot to a San persona, when delivery was `init.sh --runtime claude|gen|codex` + a `CLAUDE.md`-style prompt. They are described below in their current form (`install.sh` + the four-part `system/` persona). See [`02_architecture.md`](02_architecture.md) and [`09_packaging.md`](09_packaging.md).
 
 ## M0 — Spec freeze
 
-Lock the design described in `spec/`. Resolve open questions (binary name, runtime priorities, model registry coverage). Exit when this directory is reviewed and stable.
+Lock the design described in `spec/`. Resolve open questions (model registry coverage, methodology-gate set). Exit when this directory is reviewed and stable.
 
-## M1 — `init.sh` and template skeleton
+## M1 — `install.sh` and template skeleton
 
-The minimum viable bootstrap: `curl | bash` produces a working project directory.
+The minimum viable bootstrap: `curl | bash` installs the persona and scaffolds a working project directory.
 
 Tasks:
-- [ ] `init.sh` per the spec in [`02_architecture.md`](02_architecture.md), with `--runtime`, `--in-place`, `--ref` flags
+- [ ] `install.sh` per the spec in [`02_architecture.md`](02_architecture.md), with `--user` / `--dir` / `--no-scaffold` flags and `ML_RESEARCHER_REF` versioning
 - [ ] `template/` skeleton: `README.md`, `respec/` (methodology templates from rad-research, domain-neutral), `research/progress.md` stub, `data/`, `experiments/ledger.tsv` (header), `results/`, `papers/`
 - [ ] Placeholder substitution: `{{TOPIC}}`, `{{DATE}}`, `{{SLUG}}`
 - [ ] Smoke test in a clean Alpine docker container
 
-Exit: `init.sh "test"` produces a project that has correct directory structure and filled metadata.
+Exit: `install.sh "test"` installs the persona and produces a project with correct directory structure and filled metadata.
 
-## M2 — System prompt
+## M2 — System prompt (persona)
 
-Ship the ml playbook prompt that future projects load as `CLAUDE.md` / `GEN.md` / `AGENTS.md`.
+Ship the ml playbook prompt as the persona's four-part system files.
 
 Tasks:
-- [ ] `prompts/ml_researcher.md` modeled after ml-intern v3 (persona, three-phase workflow, anti-patterns, hardware sizing, OOM ladder, dataset format rules per training method, mandatory monitoring discipline, framing line about LLM knowledge being outdated)
+- [ ] `system/{identity,behavior,rules}.md` modeled after ml-intern v3 (identity + epistemic stance; three-loop workflow, anti-patterns, hardware sizing, OOM ladder, dataset format rules per training method, monitoring discipline; the methodology gates as research hygiene)
 - [ ] Cite influences (rad-research methodology, ml-intern, autoresearch)
 - [ ] First version domain-neutral; project-level overrides happen in `template/respec/init.md`'s playbook section
 
@@ -55,7 +57,7 @@ Tasks (six command files, each with subcommands; prefixes align to loops):
 - [ ] `commands/audit.md` — methodology audit via `critic` (cross-layer)
 - [ ] `commands/sandbox.md` — toggle sandbox mode
 
-Note: there is no `init-mlresearch` slash command. Bootstrapping a project is `init.sh`'s job.
+Note: there is no `init-mlresearch` slash command. Bootstrapping a project is `install.sh`'s job.
 
 Exit: each command runs and produces useful output in a real project.
 
@@ -88,7 +90,7 @@ Methodology guardrails enforced by hooks. See [`08_hooks.md`](08_hooks.md).
 Tasks:
 - [ ] `hooks/settings.json` — protect `data/raw/`, lock test set during selection/tuning, pre-flight on `experiment_run` skill, audit append on completion
 - [ ] `hooks/check_data_immutable.sh`, `hooks/test_set_guard.sh`, `hooks/preflight.sh`, `hooks/trace_append.sh`
-- [ ] `init.sh` copies these into `<project>/.claude/hooks/` and installs the JSON config
+- [ ] `install.sh` copies these into `.san/hooks/` and merges the `hooks` block into `.san/settings.json`
 
 Exit: writing to `data/raw/` is hard-blocked; reading test labels during Selection phase is hard-blocked; `experiment_run` triggers pre-flight automatically.
 
@@ -109,7 +111,7 @@ Exit: each skill+script pair works end-to-end. The user installs Python deps onc
 Replicate a small slice of rad-research's GBM project as a self-contained demo.
 
 Tasks:
-- [ ] `examples/gbm-tumor-purity/` produced by `init.sh "GBM tumor purity demo"` and pre-filled with synthetic data
+- [ ] `examples/gbm-tumor-purity/` produced by `install.sh "GBM tumor purity demo"` and pre-filled with synthetic data
 - [ ] Walkthrough README showing `data_understanding → research_goal → /train run → /research report` end to end
 - [ ] Domain-specific `playbook.md` showing radiomics-flavored guidance
 
@@ -123,7 +125,7 @@ Tasks:
 - [ ] Smoke-test docker run in CI for every PR to main
 - [ ] Public README badges live
 
-Exit: `curl -fsSL .../init.sh | bash -s -- "smoke"` works on macOS, Linux, and Alpine for a third-party tester.
+Exit: `curl -fsSL .../install.sh | bash -s -- "smoke"` works on macOS, Linux, and Alpine for a third-party tester.
 
 ## v0.1 sequencing
 
@@ -131,7 +133,7 @@ Exit: `curl -fsSL .../init.sh | bash -s -- "smoke"` works on macOS, Linux, and A
 M0 (spec freeze)
    │
    ▼
-M1 (init.sh + template)
+M1 (install.sh + template)
    │
    ├─► M2 (system prompt)         ──┐
    ├─► M3 (subagents)             ──┤
@@ -152,7 +154,7 @@ M2-M8 are largely independent once M1 is done. M3 (agents) and M5 (skills) coord
 
 ## Risk and sequencing notes
 
-- **M1 unblocks everything else.** Until `init.sh` exists, none of the other content can be tested in a real project.
+- **M1 unblocks everything else.** Until `install.sh` exists, none of the other content can be tested in a real project.
 - **M5 is the highest-leverage differentiator.** Skills + scripts + registry is what separates ml-researcher from "yet another agent prompt."
 - **M9 doubles as documentation.** It produces the canonical "show me how it works" demo, which becomes the README's hero example.
 - **Risk concentrations**: M2 (prompt engineering subtle), M5 (skill boundary cases), M9 (pulling rad-research's domain-specific bits into a domain-neutral demo without losing fidelity).
@@ -161,9 +163,9 @@ M2-M8 are largely independent once M1 is done. M3 (agents) and M5 (skills) coord
 
 These are real product directions, just not v0.1. Tracked in [`TODO.md`](TODO.md):
 
-- Standalone `mlr` binary (gen-code derivative)
+- Standalone `mlr` binary (San derivative)
 - MCP server packaging for tools
-- Claude Code plugin marketplace listing
+- San plugin marketplace listing
 - Cross-tool spec-kit compatibility (Cursor / Copilot / Gemini portability)
 - Auto-update tooling for existing projects
 - Sysbox-style sandbox isolation for `experiment_run`

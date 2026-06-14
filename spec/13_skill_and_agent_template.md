@@ -1,6 +1,6 @@
 # 13 — Skill and Agent Templates
 
-Canonical frontmatter + body skeletons for new skills and sub-agents in ml-researcher. Follows the official Agent Skills spec (https://agentskills.io/specification) and the Claude Code sub-agent spec (https://code.claude.com/docs/en/sub-agents). The two share `name` + `description` but differ on tool-listing syntax — see the warning box below.
+Canonical frontmatter + body skeletons for new skills and sub-agents in ml-researcher. Follows the official Agent Skills spec (https://agentskills.io/specification) and the Claude Code sub-agent spec (https://code.claude.com/docs/en/sub-agents) — San consumes the same markdown-with-frontmatter format for both. The two file types share `name` + `description` but differ on tool-listing syntax — see the warning box below.
 
 ## Field-name warning
 
@@ -176,7 +176,7 @@ Don't pin `opus` on a sub-agent unless the role genuinely requires the strongest
 
 ## Choosing `color:` for a sub-agent
 
-Purely UX in clients that show agent badges (e.g., Claude Code). Current assignments:
+Purely UX in clients that show agent badges (e.g., San, Claude Code). Current assignments:
 
 | Agent | Color | Mnemonic |
 |---|---|---|

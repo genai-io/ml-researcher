@@ -94,7 +94,7 @@ Each numbered file is a template, not a project record. The agent copies templat
 
 ## Domain customization
 
-The default `respec/` is **domain-neutral**. Domain-specific guidance lives in `.mlr/playbook.md`:
+The default `respec/` is **domain-neutral**. Domain-specific guidance lives in a project-level `playbook.md` (at the project root or under `.san/`):
 
 - For a radiomics project: small-sample guardrails, CV protocols, DeLong test, calibration.
 - For an NLP fine-tuning project: format checks (SFT/DPO/GRPO), tokenizer compatibility, pre-flight from ml-intern.
