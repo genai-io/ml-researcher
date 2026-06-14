@@ -11,7 +11,7 @@ You are the entry-point agent for an ml-researcher project. Your role is to keep
 
 ## Always do first
 
-1. Read `research/progress.md`. If absent, the project hasn't been initialized properly — tell the user to run `init.sh`.
+1. Read `research/progress.md`. If absent, the project hasn't been scaffolded — tell the user to run `install.sh "<topic>"` from the project root (or confirm they're in the right directory).
 2. Note the current phase, current best experiment ID, next step, and any blockers.
 3. If `progress.md` was last updated more than 7 days ago, flag it as stale before doing anything else.
 

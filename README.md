@@ -3,7 +3,7 @@
 <p align="center">
   <h1 align="center">< ML ✦ /></h1>
   <p align="center">
-    <strong>Disciplined ML research and engineering, in your terminal.</strong>
+    <strong>Disciplined ML research and engineering, as a San persona.</strong>
   </p>
   <p align="center">
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square" alt="License"></a>
@@ -11,92 +11,84 @@
   </p>
 </p>
 
-ml-researcher bootstraps a self-contained ML research project — pre-loaded with subagents, skills, slash commands, hooks, an ML model registry, and methodology templates. Default runtime is [Gen Code](https://github.com/genai-io/gen-code); Claude Code and Codex are supported via `--runtime`.
+`ml-researcher` is a [San](https://github.com/genai-io/san) **persona** — a switchable bundle of system prompt + skills + config that gives San the brain and discipline of a careful ML research engineer. It carries six specialist subagents, a curated model registry, methodology skills, and load-bearing research-hygiene hooks. The installer can also scaffold a complete research project around the persona.
 
-> **Status**: v0.1 — content under construction. Spec is locked in [`spec/`](spec/).
+> **Status**: v0.1. Spec is locked in [`spec/`](spec/).
+
+---
+
+## What's inside
+
+This repo **is** the persona — its files sit at the root, and the installers copy them into `.san/personas/ml-researcher/`:
+
+```
+system/
+  identity.md     # who:  an ML research engineer + epistemic stance ("verify, don't recall")
+  behavior.md     # how:  the three-loop model, Train-Loop discipline, subagent dispatch, operational know-how
+  rules.md        # rules: the non-negotiable methodology gates (research hygiene)
+skills/           # 28 skills (ml-domain · experiment · methodology), each skills/<name>/SKILL.md
+settings.json     # persona overlay — description + active skills + agent allow-list + permissions
+
+agents/           # 6 subagents      -> installed to .san/agents/
+commands/         # 6 slash commands -> installed to .san/commands/
+hooks/            # methodology hooks -> installed to .san/hooks/ + merged into .san/settings.json
+template/ data/ scripts/   # project skeleton + model_registry.yaml + python helpers (used when scaffolding)
+
+install.sh · install.ps1 · uninstall.sh · uninstall.ps1   # tooling (not copied into the persona)
+```
+
+Unlike a minimal persona, ml-researcher ships a **`rules.md`** — for this persona the methodology gates (data-before-model, locked test set, mandatory baseline) *are* the product. San's built-in safety / tool / git rules stay in force underneath; ml-researcher's permissions only tighten, never loosen them.
 
 ---
 
 ## Install
 
-You don't install ml-researcher globally. You install it **into a research project**. The project then carries everything it needs and works on any machine with the chosen runtime.
-
-### Path A — start a fresh project (creates a new directory)
+**macOS / Linux** — project scope by default; `--user` installs to `~/.san`:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
+# Persona only (use it in an existing project)
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh | bash
+
+# Persona + scaffold a fresh research project for a topic
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh \
   | bash -s -- "GBM tumor purity"
 
-cd gbm-tumor-purity
-gen     # or: claude / codex
+# User scope (persona available everywhere; no project scaffold)
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh | bash -s -- --user
 ```
 
-The slug `gbm-tumor-purity` is auto-derived from the topic.
+**Windows (PowerShell 5.1+)**
 
-### Path B — initialize the current directory
+```powershell
+irm https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.ps1 | iex
+# with options (scriptblock form):
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.ps1))) -Topic "GBM tumor purity"
+```
+
+The installer copies the persona into `.san/personas/ml-researcher`, installs the agents/commands/hooks, merges the methodology hooks into the target `settings.json`, and enables the persona by setting `"persona": "ml-researcher"` (other keys preserved). Both scripts also run from a local checkout: `./install.sh ["<topic>"] [--user|--dir PATH] [--no-scaffold]`.
+
+Then run `san` in that directory and the persona is active. Switch by hand anytime:
+
+```
+/persona ml-researcher    # activate
+/persona default          # back to built-in San
+```
+
+### Uninstall
 
 ```bash
-cd ~/my-existing-research
-
-curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/init.sh \
-  | bash -s -- "GBM tumor purity" --in-place
-
-gen
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/uninstall.sh | bash
+# Windows: irm https://raw.githubusercontent.com/genai-io/ml-researcher/main/uninstall.ps1 | iex
 ```
 
-`--in-place` skips the new-directory creation; methodology templates land alongside whatever's already there. Useful when you have raw data or partial code already.
+Removes the persona and the files it owns, and drops the selection if it pointed at this persona. It does **not** delete a scaffolded research project — that's your work.
 
-### Runtime selection
+### Requirements
 
-```bash
-# Default (recommended): Gen Code
-init.sh "topic"
+- [San](https://github.com/genai-io/san) — the agent CLI.
+- `git` (remote install) and `python3` (safe `settings.json` merge on macOS/Linux; Windows uses native PowerShell JSON).
 
-# Claude Code (subscription billing)
-init.sh "topic" --runtime claude
-
-# Codex (best-effort)
-init.sh "topic" --runtime codex
-```
-
-The runtime determines where the persona is delivered:
-
-| Runtime | Persona location | Channel |
-|---|---|---|
-| **Gen Code** *(default)* | `.gen/identities/ml-researcher.md` + `.gen/settings.json: {"identity": "ml-researcher"}` | identity slot 0 (system prompt) |
-| **Claude Code** | `CLAUDE.md` (project root) | system-reminder (project memory) |
-| **Codex** | `AGENTS.md` (project root) | system-reminder (project memory) |
-
-Gen Code has a [first-class identity slot](https://github.com/genai-io/gen-code/blob/main/docs/system-prompt.md) — separate from project memory. ml-researcher's prompt is persona-shaped, so it slots in cleanly without polluting project memory.
-
----
-
-## What you get
-
-After init, the project layout:
-
-```
-<project>/
-├── README.md, <CLAUDE.md|GEN.md|AGENTS.md as applicable>
-├── .git/                        # initialized with first commit
-├── .<claude|gen|codex>/
-│   ├── settings.json            # hooks + (gen) identity activation
-│   ├── identities/              # gen only — the persona file
-│   ├── agents/                  # 6 subagents
-│   ├── skills/                  # 17 skills, each at skills/<name>/SKILL.md (standard Anthropic Skills layout)
-│   ├── commands/                # 6 slash commands
-│   └── hooks/                   # 7 methodology hook scripts
-├── respec/                      # methodology constitution (10 principles, 5 phases)
-├── research/                    # progress.md + filled stubs per phase
-├── data/{raw,derived,splits}/   # raw is locked; test split locks during Selection/Tuning
-├── experiments/
-│   ├── ledger.tsv               # full audit trail
-│   └── EXP*/                    # one dir per experiment
-├── results/{figures,tables,reports}/
-├── papers/
-├── data/model_registry.yaml     # 18-entry curated ML knowledge base
-└── scripts/                     # bootstrap_ci.py, delong_test.py, figure_render.py
-```
+> **Legacy:** the old `init.sh "<topic>" --runtime claude|gen|codex` bootstrapper is **deprecated**. It still works as a thin shim that forwards to `install.sh`, but San is now the runtime.
 
 ---
 
@@ -116,7 +108,7 @@ Research Loop      ·  days/weeks  ·  the whole project
          Hypothesize → Edit → Run → Measure → Keep / Reset
 ```
 
-**Each Research-Loop phase is gated** — the agent (and hooks) prevent advancement until requirements are met. Six slash commands map onto the three layers:
+**Each Research-Loop phase is gated** — the persona (and hooks) prevent advancement until requirements are met. Six slash commands map onto the three layers:
 
 | Loop | Commands |
 |---|---|
@@ -133,13 +125,15 @@ See [`spec/01_overview.md`](spec/01_overview.md) for the failure modes and guard
 
 A realistic small-N project. Five phases; concrete commands at each.
 
-### Phase 0 — Bootstrap (before the agent)
+### Phase 0 — Bootstrap
 
-Drop your raw data into `data/raw/` (after init, this directory is **locked** by the `raw_data_guard` hook — you can't accidentally modify it during research).
+Scaffold and enter the project, then drop your raw data into `data/raw/` (locked by the `raw_data_guard` hook — you can't accidentally modify it during research).
 
 ```bash
-cp -r ~/downloads/gbm-mri-cohort/* gbm-tumor-purity/data/raw/
-cd gbm-tumor-purity && gen
+curl -fsSL https://raw.githubusercontent.com/genai-io/ml-researcher/main/install.sh \
+  | bash -s -- "GBM tumor purity"
+cp -r ~/downloads/gbm-mri-cohort/* data/raw/
+san
 ```
 
 ### Phase 1 — Data Understanding
@@ -155,7 +149,7 @@ To advance: research/data_understanding.md filled, data/splits/ populated.
 > clinical features, tumor purity labels (TP ≥ 60.8% binary).
 ```
 
-The agent walks the template, enforcing **patient-level splits** (not slice-level — patient leakage is the most common small-sample bug) and **locking the test split** before any model is trained.
+The persona walks the template, enforcing **patient-level splits** (not slice-level — patient leakage is the most common small-sample bug) and **locking the test split** before any model is trained.
 
 When ready: `/research phase advance`.
 
@@ -171,14 +165,7 @@ Goal: write `research/research_goal.md` so the question, success criteria, and s
 > clinical-only vs radiomics-only vs combined; need calibration for clinical use.
 ```
 
-The agent fills:
-- Primary metric (e.g., `val_auc` + bootstrap CI)
-- Baseline (the simplest defensible model)
-- Success criteria (minimum / target / model ordering)
-- Required figures & tables
-- Risks (small N, label noise, leakage paths)
-
-`/research phase advance` when ready.
+It fills: primary metric (e.g., `val_auc` + bootstrap CI), baseline (the simplest defensible model), success criteria, required figures & tables, and risks (small N, label noise, leakage paths). `/research phase advance` when ready.
 
 ### Phase 3 — Model Selection
 
@@ -187,7 +174,7 @@ Goal: write `research/model_selection.md` with a candidate matrix, shortlist, an
 ```
 > /exp paper search "small-sample radiomics + clinical fusion"
 
-Literature subagent appended 5 papers to papers/shortlist.md.
+literature subagent appended 5 papers to papers/shortlist.md.
 Recommendation: late-fusion (clinical_score + rad_score) is the
 strongest small-N pattern.
 
@@ -199,7 +186,7 @@ strongest small-N pattern.
   - google/medgemma-4b-pt    — needs more data than encoder-only models
 ```
 
-Fill `research/model_selection.md`, then **register and run the baseline** before advancing — `/research phase advance` to Fine Tuning is gated on `baseline-kept` (no improvement claims without a comparator):
+Fill `research/model_selection.md`, then **register and run the baseline** before advancing — advancing to Fine Tuning is gated on `baseline-kept` (no improvement claims without a comparator):
 
 ```
 > /exp new baseline-clinical-l2
@@ -227,21 +214,14 @@ Goal: explore the rest of the shortlist within fixed bounds. The Train Loop (aut
 Best val_auc=0.700 → new current best.
 ```
 
-For each trial the experimenter subagent:
-1. Edits `train.py` with one change
-2. Runs `python train.py > run.log 2>&1` (no tee — output redirection only)
-3. Greps the metric line
-4. Advances or resets git based on whether it improved
-5. Appends to `experiments/ledger.tsv`
-
-The **test set is locked** during this phase. The hook will block any read of `data/splits/test/`.
+The **test set is locked** during this phase. The hook blocks any read of `data/splits/test/`.
 
 ```
 > Read data/splits/test/labels.csv
 ✗ Blocked: Test set is locked during "Fine Tuning" phase.
 ```
 
-When candidates have settled: compare them on validation:
+When candidates have settled, compare them on validation:
 
 ```
 > /exp compare EXP001 EXP003
@@ -297,7 +277,7 @@ Six subagents, each owning a specific loop level:
 | **analyst** | Research | Analysis report + statistical tests |
 | **critic** | cross-layer | Methodology audit (no leakage, baseline present, locked test set) |
 
-Plus 17 skills (ml-domain, experiment, methodology — each as a standard `skills/<name>/SKILL.md`), an 18-entry model registry, 7 hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, state injection, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
+Plus 28 skills (ml-domain · experiment · methodology — each a standard `skills/<name>/SKILL.md`), an 18-entry model registry, 8 methodology hooks (raw-data lock, test-set guard, pre-flight, phase gate, trace append, sandbox banner, stop reminder), and 3 Python helpers (bootstrap CI, DeLong test, figure renderer).
 
 ---
 
@@ -314,12 +294,11 @@ Plus 17 skills (ml-domain, experiment, methodology — each as a standard `skill
 
 Full design lives in [`spec/`](spec/) — see [`spec/README.md`](spec/README.md) for the reading order, locked v0.1 decisions, and the influence map.
 
----
-
 ## Related
 
-- [Gen Code](https://github.com/genai-io/gen-code) — Open-source AI agent CLI (default runtime)
-- [genai-io/spec](https://github.com/genai-io/spec) — GenAI Foundry spec
+- [San](https://github.com/genai-io/san) — the agent CLI this persona runs on. See its [persona concept](https://github.com/genai-io/san/blob/main/docs/concepts/persona.md).
+- [social-creator](https://github.com/genai-io/social-creator) — sibling San persona (idea → social-media content); the structural template this repo mirrors.
+- [genai-io/spec](https://github.com/genai-io/spec) — GenAI Foundry spec.
 
 ## License
 

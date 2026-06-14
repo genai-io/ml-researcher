@@ -57,15 +57,15 @@ Each loop has different failure modes and therefore different guardrails:
 
 A tool that only does the Train Loop (autoresearch) cannot prevent research drift. A framework that only does the Research Loop (rad-research) cannot run the Train Loop overnight. ml-researcher encodes all three and the rules for crossing between them.
 
-## Project-centric, not user-centric
+## Project-centric by default
 
-A research project is a single directory. **All configuration lives in the project**; there is no user-level (`~/.mlr/`) configuration. Rationale:
+A research project is a single directory, and the **research record** lives entirely inside it. The persona can be installed at project scope (`<project>/.san/`, the default and recommended) or user scope (`~/.san/`), but the scaffolded `research/ experiments/ data/` — the scientific record — is always project-local. Rationale:
 
 - A research project is a sealed scientific record. Reproducibility from the directory alone is a hard requirement.
-- No global state means no cross-contamination between projects (different metrics, different test-set rules, different paper databases).
-- Cloning the project is the same as cloning its agent configuration.
+- Project-scope install means no cross-contamination between projects (different metrics, different test-set rules, different paper databases).
+- Cloning the project clones its record; re-installing the persona (`install.sh --no-scaffold`) restores the brain.
 
-This is enforced at compile time (see [`02_architecture.md`](02_architecture.md)) — the `nouserconfig` build tag removes user-level config code paths from the binary.
+San resolves project scope over user scope, so a project-local `.san/` always wins. See [`02_architecture.md`](02_architecture.md).
 
 ## What ml-researcher is not
 

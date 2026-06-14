@@ -2,7 +2,7 @@
 
 - Current phase: Data Understanding
 - Current best: — (no experiments yet)
-- Last action: project initialized via `init.sh`
+- Last action: project initialized via `install.sh`
 - Last updated: {{DATE}}
 
 ## Next

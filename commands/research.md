@@ -64,7 +64,7 @@ Produce the analysis report.
    - Template: `respec/05_analysis_report.md`
    - Output: `research/analysis_report.md`
    - Required sections: Data summary, Goal achievement, Model comparison, Statistical tests, Limits, Conclusion
-   - Reporting language discipline: per `CLAUDE.md` / `GEN.md`
+   - Reporting language discipline: per the persona's `behavior.md`
 
 3. After the analyst returns, automatically spawn `critic` with `scope=report` for an audit. Surface findings.
 

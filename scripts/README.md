@@ -7,7 +7,7 @@ Python helpers invoked by skills via Bash. Each script:
 - prints structured output (JSON line) for parsable results, free-form for figures
 - depends on the standard scientific Python stack (numpy, pandas, scipy, scikit-learn, matplotlib)
 
-These dependencies are not installed by `init.sh`. The user installs them once per machine (e.g., `pip install numpy pandas scipy scikit-learn matplotlib` or via `uv add`).
+These dependencies are not installed by `install.sh`. The user installs them once per machine (e.g., `pip install numpy pandas scipy scikit-learn matplotlib` or via `uv add`).
 
 ## Inventory
 

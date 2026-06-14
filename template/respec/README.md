@@ -25,4 +25,4 @@
 
 These are templates. **Do not fill them in here.** Copy each into `research/<same_name>.md` and fill the project's actual content there. The agent's `phase-advance` skill checks for the filled `research/*.md` files, not for these templates.
 
-The `init.sh` script already created stub `research/*.md` files based on these templates.
+The `install.sh` scaffold already created stub `research/*.md` files based on these templates.

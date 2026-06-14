@@ -61,7 +61,7 @@ Multi-experiment comparison with statistical tests.
 6. Render comparison bar chart via `figure-render` skill (`kind=comparison_bar`, error bars = CIs).
 7. Print comparison table + tests.
 
-Use the language discipline from `CLAUDE.md` / `GEN.md`: "trend toward" for non-significant, "significantly better" only with passed test.
+Use the reporting-language discipline from the persona's `behavior.md`: "trend toward" for non-significant, "significantly better" only with passed test.
 
 If `--split test` is requested, the test_set_guard hook will block during Selection/Tuning phases.
 

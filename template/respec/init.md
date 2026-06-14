@@ -2,11 +2,11 @@
 
 How to instantiate `respec/` templates into a concrete project, and how to keep state, trial trace, and directory documentation up to date afterwards.
 
-This file does NOT mandate fixed directory names beyond what `init.sh` already created. It does require: clear entry points, traceable references, and per-subdirectory state notes.
+This file does NOT mandate fixed directory names beyond what `install.sh` already scaffolded. It does require: clear entry points, traceable references, and per-subdirectory state notes.
 
 ## 1. Project initialization
 
-`init.sh` already produced this skeleton. To begin work:
+`install.sh "<topic>"` already scaffolded this skeleton (and installed the ml-researcher San persona into `.san/`). To begin work:
 
 1. Read `README.md` (project root) — confirm topic, current state, current results, existing directories.
 2. Read `respec/respec.md` — confirm lifecycle and recording rules.
@@ -30,13 +30,14 @@ A research project needs five things:
 4. **Experiment artifacts**: what did each run produce?
 5. **Result artifacts**: which figures/tables/reports were ultimately adopted?
 
-Layout `init.sh` creates:
+Layout `install.sh` scaffolds:
 
 ```
 <project-root>/
   README.md
-  CLAUDE.md (or GEN.md / AGENTS.md)
-  .claude/ (or .gen/ / .codex/)
+  .san/                # San persona + agents/commands/hooks (the "brain")
+    personas/ml-researcher/{system,skills,settings.json}
+    agents/ commands/ hooks/ settings.json
 
   respec/
     README.md  respec.md  init.md

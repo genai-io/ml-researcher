@@ -42,7 +42,7 @@ For each pairwise comparison declared in research_goal:
 - **Result**: <z, p, CI>
 - **Verdict**: `<significantly better / trend toward / comparable>`
 
-Use the language discipline from `prompts/ml_researcher.md`. Never write "outperforms" without a test.
+Use the reporting-language discipline from the persona's `behavior.md`. Never write "outperforms" without a test.
 
 ## 5. Calibration
 

@@ -1,0 +1,48 @@
+{
+  "description": "ML research engineer — disciplined methodology: data understood before models, test set locked during selection/tuning, a registered baseline before any improvement claim, three nested loops (research / experiment / train) each with its own discipline. Optimizes for credible, reproducible findings.",
+  "skills": {
+    "ablation-planner": "active",
+    "bootstrap-ci": "active",
+    "calibration-check": "active",
+    "checklist-verify": "active",
+    "citation-graph": "active",
+    "data-leak-scan": "active",
+    "dataset-inspect": "active",
+    "delong-test": "active",
+    "error-analysis": "active",
+    "exp-register": "active",
+    "exp-run": "active",
+    "figure-render": "active",
+    "git-keep-or-reset": "active",
+    "hypothesis-ledger": "active",
+    "ledger-append": "active",
+    "medical-small-sample-transfer": "active",
+    "metric-grep": "active",
+    "model-recommend": "active",
+    "oom-recovery-checklist": "active",
+    "paper-read": "active",
+    "paper-search": "active",
+    "phase-advance": "active",
+    "repro-seal": "active",
+    "sandbox-mode": "active",
+    "seed-sensitivity": "active",
+    "tabular-tabpfn-vs-xgboost": "active",
+    "train-monitor": "active",
+    "trial-log": "active"
+  },
+  "agents": ["navigator", "literature", "modeler", "experimenter", "analyst", "critic"],
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pytest:*)",
+      "Bash(pip:*)",
+      "Bash(git:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Read(data/splits/test/**)"
+    ]
+  }
+}

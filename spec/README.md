@@ -1,6 +1,6 @@
 # ML Researcher Specification
 
-> v0.1 spec — pre-implementation. The contents below describe the intended design; the actual content (`init.sh`, `agents/`, `skills/`, etc.) is being written in parallel.
+> v0.1 spec. ml-researcher is a [San](https://github.com/genai-io/san) persona (system prompt + skills + config), installed by `install.sh` and toggled with `/persona ml-researcher`. The contents below describe the design; the persona content (`system/`, `agents/`, `skills/`, etc.) lives at the repo root.
 
 ## Reading Order
 
@@ -9,7 +9,7 @@ Spec documents are numbered to suggest a reading order for newcomers:
 | File | Topic |
 |---|---|
 | [`01_overview.md`](01_overview.md) | Why ml-researcher exists; the three-layer loop model |
-| [`02_architecture.md`](02_architecture.md) | Zero-install model; `init.sh` is the only delivery; multi-runtime support |
+| [`02_architecture.md`](02_architecture.md) | San persona architecture; the four-part prompt; installer responsibilities; `.san/` layout |
 | [`03_project_structure.md`](03_project_structure.md) | Research project directory layout |
 | [`04_methodology.md`](04_methodology.md) | Research phases, records, guardrails |
 | [`05_agents.md`](05_agents.md) | Built-in subagents and their roles |
@@ -36,9 +36,9 @@ See [`01_overview.md`](01_overview.md) for how these are combined.
 
 | Question | Decision |
 |---|---|
-| Delivery vehicle | `init.sh` curl-bash; **no plugin install, no binary, no package manager** |
-| Project config dir | `.claude/` (Claude Code default); `.gen/` for gen-code; `.codex/` for Codex |
-| Multi-runtime support | First-class: Claude Code + gen-code; best-effort: Codex |
+| Delivery vehicle | `install.sh` curl-bash, San persona; **no plugin install, no binary, no package manager** |
+| Config dir | `.san/` (project scope) or `~/.san` (`--user` scope); persona at `.san/personas/ml-researcher/` |
+| Runtime | [San](https://github.com/genai-io/san); legacy `claude`/`gen`/`codex` via `init.sh` deprecated |
 | Train Loop metric scope | Single primary metric; optional secondary metrics declared per project |
 | `respec/` flavor | Domain-neutral default; project-level overrides via `playbook.md` |
 | Standalone binary | Deferred indefinitely; tracked in [`TODO.md`](TODO.md) |
